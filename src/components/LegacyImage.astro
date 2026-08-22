@@ -1,0 +1,98 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+/**
+ * Изображение с сайта-донора.
+ *
+ * Донор pivzavod74.ru недоступен из этого окружения (egress-политика), поэтому
+ * файлы ещё не выгружены. Компонент проверяет наличие файла на сборке:
+ *  — файл есть  → обычный <img> с ленивой загрузкой;
+ *  — файла нет  → видимый плейсхолдер с именем ожидаемого файла.
+ * После `npm run migrate` (см. scripts/migrate-donor.mjs) картинки появятся
+ * в public/images/legacy/ и подставятся сами, без правок разметки.
+ */
+interface Props {
+  /** Имя файла с донора, например `zdanie.jpg` */
+  src: string;
+  alt: string;
+  /** CSS aspect-ratio рамки, например '16 / 10' */
+  ratio?: string;
+  loading?: 'lazy' | 'eager';
+  class?: string;
+  sizes?: string;
+}
+
+const {
+  src,
+  alt,
+  ratio = '16 / 10',
+  loading = 'lazy',
+  class: className = '',
+  sizes,
+} = Astro.props;
+
+const publicPath = path.join(process.cwd(), 'public', 'images', 'legacy', src);
+const exists = fs.existsSync(publicPath);
+const url = `/images/legacy/${src}`;
+---
+
+<figure class:list={['legacy', className]} style={`--ratio:${ratio}`}>
+  {exists ? (
+    <img src={url} alt={alt} loading={loading} decoding="async" sizes={sizes} />
+  ) : (
+    <div class="legacy__stub" role="img" aria-label={`Изображение не выгружено: ${alt}`}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="8.5" cy="10" r="1.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="m4 17 5-5 4 4 2.5-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span class="legacy__name">{src}</span>
+      <span class="legacy__hint">не выгружено с донора</span>
+    </div>
+  )}
+</figure>
+
+<style>
+  .legacy {
+    margin: 0;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, #241A15, #3A2C22);
+  }
+  .legacy img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .legacy__stub {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    color: var(--c-ochre);
+    border: 1px dashed var(--c-ochre);
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    text-align: center;
+  }
+  .legacy__stub svg { width: 28px; height: 28px; opacity: 0.8; }
+  .legacy__name {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--c-muted);
+    word-break: break-all;
+  }
+  .legacy__hint {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.75;
+  }
+</style>

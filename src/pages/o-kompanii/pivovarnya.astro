@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import BreweryBlueprint from '../../components/BreweryBlueprint.astro';
+---
+
+<BaseLayout
+  title="Пивоварня"
+  description="Оборудование «Лаборатории живого пива»: пивоварня, привезённая из Европы в июне 2011 года, для разработки новых сортов и восстановления забытых рецептур."
+>
+  <PageHeader
+    label="О компании"
+    title="Пивоварня"
+    lead="Оборудование, ради которого в июне 2011 года через полконтинента ехали пять фур."
+    crumbs={[{ label: 'О компании', href: '/o-kompanii' }, { label: 'Пивоварня' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="intro">
+        <div class="prose">
+          <p class="label">Зачем такое оборудование</p>
+          <p>
+            Данное уникальное оборудование установлено в Лаборатории для разработки
+            и внедрения новых сортов, проведения экспериментов, восстановления забытых
+            древних рецептур, поиска пивоваром сочетаний необычных ингредиентов —
+            для рождения новых вкусовых сортов пива.
+          </p>
+          <p>
+            14 июня 2011 г. — радостное событие: на пяти огромных фурах из Европы
+            привезли нашу долгожданную пивоварню!
+          </p>
+        </div>
+        <div class="intro__media">
+          <LegacyImage src="a0007.jpg" alt="Оборудование пивоварни «Лаборатория живого пива»" ratio="4 / 3" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Фишка №2: чертёж дорисовывается при скролле -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Технологическая линия</p>
+        <h2>Как устроена «Лаборатория»</h2>
+      </div>
+      <BreweryBlueprint />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Как это привозили</p>
+        <h2>Пять фур, июнь 2011</h2>
+      </div>
+      <div class="grid grid--2">
+        <LegacyImage src="zip0.jpg" alt="Разгрузка оборудования пивоварни, июнь 2011 года" ratio="4 / 3" />
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/FmCBokfuBkk"
+            title="Пивоварня «Лаборатория живого пива»: оборудование"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-16);
+    align-items: center;
+  }
+  @media (max-width: 1023px) { .intro { gap: var(--s-8); } }
+  @media (max-width: 767px) {
+    .intro { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+  }
+
+  .video {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
+  .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+</style>

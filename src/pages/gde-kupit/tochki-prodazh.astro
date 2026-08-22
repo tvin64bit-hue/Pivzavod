@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import YandexMap from '../../components/YandexMap.astro';
+import { outlets } from '../../data/content';
+import { maps } from '../../data/site';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Точки продаж «Лаборатории живого пива» в Челябинске',
+  itemListElement: outlets.map((o, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Store',
+      name: o.name,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Челябинск',
+        streetAddress: o.address,
+      },
+      openingHours: o.hours,
+    },
+  })),
+};
+---
+
+<BaseLayout
+  title="Точки продаж"
+  description="Шесть фирменных точек продаж «Лаборатории живого пива» в Челябинске: SPAR на Труда, ТК «Радуга», ТК «Кольцо», «Молния», «Теорема», магазин «Пивзавод». Адреса и часы работы."
+  schema={schema}
+>
+  <PageHeader
+    label="Где наше пиво"
+    title="Точки продаж"
+    lead="Шесть точек в Челябинске. Внутри торговых комплексов нас бывает непросто найти — поэтому мы написали, куда именно идти."
+    crumbs={[{ label: 'Где наше пиво', href: '/gde-kupit' }, { label: 'Точки продаж' }]}
+  />
+
+  <section class="section">
+    <div class="container outlets-layout">
+      <div class="outlets" data-accordion>
+        {outlets.map((o) => (
+          <details class="outlet card" open>
+            <summary class="outlet__summary">
+              <span class="outlet__name">
+                <span class="outlet__title">{o.name}</span>
+                <span class="caption">{o.address}</span>
+              </span>
+              <span class="outlet__chevron" aria-hidden="true"></span>
+            </summary>
+
+            <div class="outlet__body">
+              {o.photo && <LegacyImage src={o.photo} alt={o.name} ratio="16 / 10" />}
+              <dl class="outlet__rows">
+                {o.where && (
+                  <div class="outlet__row">
+                    <dt>Как найти</dt>
+                    <dd>{o.where}</dd>
+                  </div>
+                )}
+                <div class="outlet__row">
+                  <dt>Часы</dt>
+                  <dd>{o.hours}</dd>
+                </div>
+                <div class="outlet__row">
+                  <dt>Телефон</dt>
+                  <dd><a href={o.phoneHref}>{o.phone}</a></dd>
+                </div>
+              </dl>
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <aside class="outlets-map">
+        <YandexMap
+          constructorUrl={maps.outletsConstructorUrl}
+          query="Челябинск, улица Карпинского, 62"
+          title="Карта точек продаж «Лаборатории живого пива» в Челябинске"
+          height={620}
+        />
+        {!maps.outletsConstructorUrl && (
+          <p class="placeholder-note">
+            <strong>Временная карта</strong>
+            Пока показана одна метка — магазин на Карпинского, 62. Чтобы вывести
+            все шесть точек, соберите карту в конструкторе Яндекса и вставьте ссылку
+            в <code>maps.outletsConstructorUrl</code> (src/data/site.ts). Инструкция — в README.
+          </p>
+        )}
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .outlets-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-8);
+    align-items: start;
+  }
+
+  .outlets { display: grid; gap: var(--s-4); }
+
+  .outlet { padding: 0; }
+  .outlet__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-6);
+    cursor: pointer;
+    list-style: none;
+  }
+  .outlet__summary::-webkit-details-marker { display: none; }
+  .outlet__name { display: flex; flex-direction: column; gap: var(--s-1); }
+  .outlet__title {
+    font-family: var(--f-display);
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+  }
+
+  .outlet__chevron {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-right: 1.5px solid var(--c-accent);
+    border-bottom: 1.5px solid var(--c-accent);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform var(--t-fast);
+  }
+  .outlet[open] .outlet__chevron { transform: rotate(-135deg) translate(-2px, -2px); }
+
+  .outlet__body { padding: 0 var(--s-6) var(--s-6); }
+  .outlet__rows { margin: var(--s-6) 0 0; }
+  .outlet__row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: var(--s-4);
+    padding: var(--s-2) 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .outlet__row:last-child { border-bottom: 0; }
+  .outlet__row dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    padding-top: 4px;
+  }
+  .outlet__row dd { margin: 0; font-size: 15px; }
+  .outlet__row a { text-decoration: none; }
+
+  .outlets-map { position: sticky; top: calc(var(--header-h) + var(--s-4)); }
+  .outlets-map .placeholder-note { margin-top: var(--s-4); }
+  .outlets-map code {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--c-accent);
+  }
+
+  /* Планшет: карточки и карта стеком */
+  @media (max-width: 1023px) {
+    .outlets-layout { grid-template-columns: minmax(0, 1fr); }
+    .outlets-map { position: static; }
+  }
+  @media (max-width: 767px) {
+    .outlet__summary { padding: var(--s-4); }
+    .outlet__body { padding: 0 var(--s-4) var(--s-4); }
+    .outlet__title { font-size: 18px; line-height: 26px; }
+    .outlet__row { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
+  }
+</style>
+
+<script>
+  /**
+   * Раздел 5 ТЗ: на мобильном карточки точек — аккордеон, на десктопе развёрнуты.
+   * Разметка отдаётся раскрытой, поэтому без JS страница остаётся читаемой.
+   */
+  const mq = window.matchMedia('(max-width: 767px)');
+  const items = Array.from(
+    document.querySelectorAll<HTMLDetailsElement>('[data-accordion] > details'),
+  );
+
+  const sync = (mobile: boolean) => {
+    items.forEach((item, i) => {
+      // На мобильном оставляем открытой только первую точку
+      item.open = mobile ? i === 0 : true;
+    });
+  };
+
+  if (items.length) {
+    sync(mq.matches);
+    mq.addEventListener('change', (e) => sync(e.matches));
+  }
+</script>

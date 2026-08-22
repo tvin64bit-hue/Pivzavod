@@ -1,0 +1,25 @@
+{
+  "name": "pivzavod74",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Сайт «Лаборатория живого пива» (Челябинск)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "migrate": "node scripts/migrate-donor.mjs",
+    "check:functions": "tsc -p functions/tsconfig.json"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.14.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "sharp": "^0.34.4",
+    "typescript": "^5.9.3"
+  }
+}

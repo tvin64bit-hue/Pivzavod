@@ -1,0 +1,221 @@
+---
+import Logo from './Logo.astro';
+import { nav } from '../data/site';
+
+const pathname = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+---
+
+<header class="hdr" id="site-header" data-header>
+  <div class="hdr__inner container">
+    <a href="/" class="hdr__logo" aria-label="На главную — Лаборатория живого пива">
+      <Logo />
+    </a>
+
+    <nav class="hdr__nav" aria-label="Основное меню">
+      <ul>
+        {nav.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button
+      class="hdr__burger"
+      type="button"
+      aria-label="Открыть меню"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-burger
+    >
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Полноэкранный оверлей меню на ≤767px (раздел 4 «Шапка») -->
+<div class="menu" id="mobile-menu" hidden data-menu>
+  <nav class="menu__nav container" aria-label="Мобильное меню">
+    <ul>
+      {nav.map((item) => (
+        <li>
+          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <a class="btn btn--primary menu__cta" href="/kontakty">Связаться</a>
+  </nav>
+</div>
+
+<style>
+  .hdr {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: transparent;
+    transition: background-color var(--t-fast), backdrop-filter var(--t-fast),
+                box-shadow var(--t-fast);
+  }
+  .hdr__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-8);
+    height: var(--header-h);
+    transition: height var(--t-fast);
+  }
+  .hdr__logo { text-decoration: none; flex: none; }
+
+  /* Скролл вниз на 80px: высота −20%, фон rgba(28,20,16,.92) + blur(8px) */
+  .hdr.is-scrolled {
+    background: rgba(28, 20, 16, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 1px 0 var(--c-border);
+  }
+  .hdr.is-scrolled .hdr__inner { height: calc(var(--header-h) * 0.8); }
+
+  .hdr__nav ul {
+    display: flex;
+    align-items: center;
+    gap: var(--s-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .hdr__nav li { margin: 0; }
+  .hdr__nav a {
+    display: block;
+    padding: var(--s-2) 0;
+    color: var(--c-text);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+  }
+  .hdr__nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: var(--c-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-fast);
+  }
+  .hdr__nav a:hover, .hdr__nav a[aria-current='page'] { color: var(--c-accent); }
+  .hdr__nav a:hover::after, .hdr__nav a[aria-current='page']::after { transform: scaleX(1); }
+
+  .hdr__burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0 9px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .hdr__burger span {
+    display: block;
+    height: 1.5px;
+    background: var(--c-text);
+    border-radius: 2px;
+    transition: transform var(--t-fast), opacity var(--t-fast);
+  }
+  .hdr__burger[aria-expanded='true'] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .hdr__burger[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+  .hdr__burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  @media (max-width: 1023px) {
+    .hdr__nav ul { gap: var(--s-4); }
+    .hdr__nav a { font-size: 14px; }
+  }
+  @media (max-width: 767px) {
+    .hdr__nav { display: none; }
+    .hdr__burger { display: flex; }
+  }
+
+  /* --- Полноэкранный оверлей --- */
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    background: var(--c-bg);
+    display: flex;
+    align-items: center;
+    overflow-y: auto;
+    padding-block: var(--header-h) var(--s-16);
+  }
+  .menu[hidden] { display: none; }
+  .menu__nav ul { list-style: none; margin: 0 0 var(--s-12); padding: 0; }
+  .menu__nav li { margin-bottom: var(--s-6); }
+  .menu__nav a {
+    font-family: var(--f-display);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--c-text);
+    text-decoration: none;
+  }
+  .menu__nav a[aria-current='page'] { color: var(--c-accent); }
+  .menu__cta { width: 100%; }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+
+  // Состояние шапки при скролле вниз на 80px
+  if (header) {
+    const SCROLL_THRESHOLD = 80;
+    let ticking = false;
+    const sync = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > SCROLL_THRESHOLD);
+      ticking = false;
+    };
+    sync();
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          window.requestAnimationFrame(sync);
+        }
+      },
+      { passive: true },
+    );
+  }
+
+  if (burger && menu) {
+    const setOpen = (open: boolean) => {
+      menu.hidden = !open;
+      burger.setAttribute('aria-expanded', String(open));
+      burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+      document.body.classList.toggle('is-locked', open);
+    };
+
+    burger.addEventListener('click', () => setOpen(menu.hidden));
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        setOpen(false);
+        burger.focus();
+      }
+    });
+    // Возврат к десктопной раскладке при ресайзе — оверлей не должен «залипать»
+    window.matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
+      if (e.matches && !menu.hidden) setOpen(false);
+    });
+  }
+</script>

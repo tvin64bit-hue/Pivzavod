@@ -1,0 +1,187 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import LegacyImage from '../components/LegacyImage.astro';
+import LeadForm from '../components/LeadForm.astro';
+import YandexMap from '../components/YandexMap.astro';
+import { contacts, requisites, maps, wholesaleContacts } from '../data/site';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'ООО «Лаборатория живого пива»',
+    telephone: contacts.officePhone.label,
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'RU',
+      addressLocality: 'Челябинск',
+      postalCode: contacts.postalCode,
+      streetAddress: contacts.street,
+    },
+  },
+};
+---
+
+<BaseLayout
+  title="Контакты"
+  description="Контакты «Лаборатории живого пива»: Челябинск, ул. Карпинского, 62, офис 1. Телефон +7 (922) 750-33-01, часы работы, проезд, реквизиты."
+  schema={schema}
+>
+  <PageHeader
+    label="Контакты"
+    title="Как с нами связаться"
+    lead="Офис на Карпинского, 62 — там же магазин и дегустационный зал. Звоните или оставьте заявку, форма не заменяет телефон, а дополняет его."
+    crumbs={[{ label: 'Контакты' }]}
+  />
+
+  <section class="section">
+    <div class="container contacts-layout">
+      <div class="contacts-info">
+        <dl class="info-rows">
+          <div class="info-row">
+            <dt>Адрес</dt>
+            <dd>{contacts.addressFull}</dd>
+          </div>
+          <div class="info-row">
+            <dt>Телефон офиса</dt>
+            <dd>
+              <a class="info-phone" href={contacts.officePhone.href}>{contacts.officePhone.label}</a>
+              <span class="caption">{contacts.officeHours}</span>
+            </dd>
+          </div>
+          <div class="info-row">
+            <dt>Проезд</dt>
+            <dd>{contacts.transit}</dd>
+          </div>
+          <div class="info-row">
+            <dt>Опт</dt>
+            <dd>
+              {wholesaleContacts.map((c) => (
+                <span class="info-person">
+                  {c.name} — <a href={c.href}>{c.phone}</a>
+                </span>
+              ))}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="building">
+          <LegacyImage src={contacts.photo} alt="Здание на ул. Карпинского, 62" ratio="16 / 10" />
+        </div>
+      </div>
+
+      <div class="contacts-map">
+        <YandexMap
+          constructorUrl={maps.officeConstructorUrl}
+          query={maps.officeQuery}
+          title="Карта: ул. Карпинского, 62, Челябинск"
+          height={560}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <LeadForm
+        topic="other"
+        title="Написать нам"
+        description="Форма дублирует телефон, а не заменяет его — если вопрос срочный, лучше позвоните."
+        source="Контакты"
+      />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Юридическая информация</p>
+        <h2>Реквизиты</h2>
+      </div>
+
+      <div class="grid grid--2">
+        {requisites.map((org) => (
+          <div class="card req">
+            <h3>{org.org}</h3>
+            <dl class="req__rows">
+              {org.rows.map(([k, v]) => (
+                <div class="req__row">
+                  <dt>{k}</dt>
+                  <dd class="mono">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contacts-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-12);
+    align-items: start;
+  }
+
+  .info-rows { margin: 0 0 var(--s-8); border-top: 1px solid var(--c-border); }
+  .info-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: var(--s-4);
+    padding: var(--s-4) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .info-row dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    padding-top: 5px;
+  }
+  .info-row dd {
+    margin: 0;
+    font-size: 15px;
+    line-height: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+  }
+  .info-phone {
+    font-family: var(--f-mono);
+    font-size: 19px;
+    text-decoration: none;
+  }
+  .info-person a { text-decoration: none; }
+
+  .req h3 { font-size: 19px; line-height: 27px; margin-bottom: var(--s-6); }
+  .req__rows { margin: 0; }
+  .req__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-2) 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .req__row:last-child { border-bottom: 0; }
+  .req__row dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+  }
+  .req__row dd { margin: 0; font-size: 14px; }
+
+  @media (max-width: 1023px) {
+    .contacts-layout { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+  }
+  @media (max-width: 767px) {
+    .info-row { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
+  }
+</style>

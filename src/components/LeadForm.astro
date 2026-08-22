@@ -1,0 +1,315 @@
+---
+import { leadTopics, type LeadTopic } from '../data/site';
+
+/**
+ * Единая форма заявки — раздел 4 «Сквозные компоненты».
+ * Используется на страницах «Впечатления», «Опт», «Контакты», «Вакансии»,
+ * «Осторожно, подделки». Тема предзаполняется в зависимости от страницы.
+ * Отправка — POST /api/lead → Telegram Bot API (раздел 7 ТЗ, functions/api/lead.ts).
+ */
+interface Props {
+  /** Предзаполненная тема обращения */
+  topic?: LeadTopic;
+  title?: string;
+  description?: string;
+  /** Метка формы для сообщения в Telegram — помогает понять, откуда заявка */
+  source?: string;
+  id?: string;
+}
+
+const {
+  topic = 'other',
+  title = 'Оставить заявку',
+  description = 'Заполните форму — мы свяжемся с вами в течение рабочего дня.',
+  source = Astro.url.pathname,
+  id = 'lead',
+} = Astro.props;
+
+const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<section class="lead" id={id}>
+  <div class="lead__head">
+    <p class="label">Заявка</p>
+    <h2>{title}</h2>
+    <p class="lead__desc caption">{description}</p>
+  </div>
+
+  <form class="lead__form" data-lead-form novalidate>
+    <input type="hidden" name="source" value={source} />
+    <!-- Honeypot: скрытое поле, которое заполняют только боты -->
+    <div class="lead__hp" aria-hidden="true">
+      <label for={`${uid}-company`}>Не заполняйте это поле</label>
+      <input type="text" id={`${uid}-company`} name="company" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="lead__field">
+      <label for={`${uid}-name`}>Имя <span class="req" aria-hidden="true">*</span></label>
+      <input
+        type="text" id={`${uid}-name`} name="name" required
+        autocomplete="name" maxlength="80" placeholder="Как к вам обращаться"
+        aria-describedby={`${uid}-name-err`}
+      />
+      <p class="lead__err" id={`${uid}-name-err`} data-err-for="name" hidden>Укажите имя</p>
+    </div>
+
+    <div class="lead__field">
+      <label for={`${uid}-phone`}>Телефон <span class="req" aria-hidden="true">*</span></label>
+      <input
+        type="tel" id={`${uid}-phone`} name="phone" required
+        autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__"
+        data-phone-mask aria-describedby={`${uid}-phone-err`}
+      />
+      <p class="lead__err" id={`${uid}-phone-err`} data-err-for="phone" hidden>
+        Укажите телефон в формате +7 (999) 123-45-67
+      </p>
+    </div>
+
+    <div class="lead__field">
+      <label for={`${uid}-topic`}>Тема</label>
+      <select id={`${uid}-topic`} name="topic">
+        {leadTopics.map((t) => (
+          <option value={t.value} selected={t.value === topic}>{t.label}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="lead__field lead__field--wide">
+      <label for={`${uid}-message`}>Комментарий</label>
+      <textarea
+        id={`${uid}-message`} name="message" rows="4" maxlength="2000"
+        placeholder="Сколько вас будет, на какую дату, что именно интересует"></textarea>
+    </div>
+
+    <div class="lead__actions lead__field--wide">
+      <button type="submit" class="btn btn--primary" data-submit>Отправить</button>
+      <p class="lead__consent caption">
+        Нажимая «Отправить», вы соглашаетесь на обработку персональных данных.
+      </p>
+    </div>
+
+    <p class="lead__status lead__status--ok lead__field--wide" data-ok hidden role="status">
+      Спасибо! Мы свяжемся с вами в течение рабочего дня.
+    </p>
+    <p class="lead__status lead__status--fail lead__field--wide" data-fail hidden role="alert">
+      Не удалось отправить заявку. Позвоните нам, пожалуйста: <a href="tel:+79227503301">+7 (922) 750-33-01</a>.
+    </p>
+  </form>
+</section>
+
+<style>
+  .lead {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: var(--s-12);
+  }
+  .lead__head { margin-bottom: var(--s-8); }
+  .lead__head h2 { font-size: 28px; line-height: 36px; margin-bottom: var(--s-3); }
+  .lead__desc { max-width: 56ch; }
+
+  .lead__form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-6);
+  }
+  .lead__field--wide { grid-column: 1 / -1; }
+
+  .lead__hp {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .lead__field { display: flex; flex-direction: column; gap: var(--s-2); }
+  .lead__field label {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+  }
+  .req { color: var(--c-accent); }
+
+  .lead input,
+  .lead select,
+  .lead textarea {
+    width: 100%;
+    padding: 13px var(--s-4);
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-sm);
+    color: var(--c-text);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 24px;
+    transition: border-color var(--t-fast);
+  }
+  .lead textarea { resize: vertical; min-height: 108px; }
+  .lead input::placeholder,
+  .lead textarea::placeholder { color: rgba(201, 184, 164, 0.5); }
+  .lead input:hover,
+  .lead select:hover,
+  .lead textarea:hover { border-color: rgba(250, 243, 232, 0.25); }
+  .lead input:focus,
+  .lead select:focus,
+  .lead textarea:focus { border-color: var(--c-accent); }
+
+  .lead select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--c-muted) 50%),
+                      linear-gradient(135deg, var(--c-muted) 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% + 2px), calc(100% - 14px) calc(50% + 2px);
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: var(--s-12);
+  }
+
+  .lead [aria-invalid='true'] { border-color: var(--c-error); }
+  .lead__err {
+    margin: 0;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--c-error);
+  }
+  .lead__err[hidden] { display: none; }
+
+  .lead__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--s-4) var(--s-6);
+  }
+  .lead__consent { max-width: 44ch; margin: 0; }
+
+  .lead__status {
+    margin: 0;
+    padding: var(--s-3) var(--s-4);
+    border-radius: var(--r-sm);
+    font-size: 15px;
+  }
+  .lead__status[hidden] { display: none; }
+  .lead__status--ok {
+    color: var(--c-success);
+    background: rgba(127, 166, 107, 0.12);
+    border: 1px solid rgba(127, 166, 107, 0.4);
+  }
+  .lead__status--fail {
+    color: var(--c-error);
+    background: rgba(226, 96, 74, 0.12);
+    border: 1px solid rgba(226, 96, 74, 0.4);
+  }
+
+  @media (max-width: 767px) {
+    .lead { padding: var(--s-8) var(--s-6); }
+    .lead__form { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
+    .lead__actions .btn { width: 100%; }
+  }
+</style>
+
+<script>
+  /** Маска +7 (999) 123-45-67 */
+  function formatRuPhone(raw: string): string {
+    let digits = raw.replace(/\D/g, '');
+    if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+    if (!digits.startsWith('7')) digits = '7' + digits;
+    digits = digits.slice(0, 11);
+
+    const rest = digits.slice(1);
+    let out = '+7';
+    if (rest.length) out += ` (${rest.slice(0, 3)}`;
+    if (rest.length >= 4) out += `) ${rest.slice(3, 6)}`;
+    if (rest.length >= 7) out += `-${rest.slice(6, 8)}`;
+    if (rest.length >= 9) out += `-${rest.slice(8, 10)}`;
+    return out;
+  }
+
+  const isCompletePhone = (v: string) => v.replace(/\D/g, '').length === 11;
+
+  document.querySelectorAll<HTMLInputElement>('[data-phone-mask]').forEach((input) => {
+    const apply = () => {
+      // Пустое поле не превращаем в «+7» — иначе required не отработает визуально
+      if (!input.value.replace(/\D/g, '')) {
+        input.value = '';
+        return;
+      }
+      input.value = formatRuPhone(input.value);
+    };
+    input.addEventListener('input', apply);
+    input.addEventListener('focus', () => {
+      if (!input.value) input.value = '+7 ';
+    });
+    input.addEventListener('blur', () => {
+      if (input.value.replace(/\D/g, '') === '7') input.value = '';
+    });
+  });
+
+  document.querySelectorAll<HTMLFormElement>('[data-lead-form]').forEach((form) => {
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]');
+    const ok = form.querySelector<HTMLElement>('[data-ok]');
+    const fail = form.querySelector<HTMLElement>('[data-fail]');
+
+    const setError = (field: string, on: boolean) => {
+      const input = form.querySelector<HTMLElement>(`[name="${field}"]`);
+      const err = form.querySelector<HTMLElement>(`[data-err-for="${field}"]`);
+      input?.setAttribute('aria-invalid', String(on));
+      if (err) err.hidden = !on;
+    };
+
+    ['name', 'phone'].forEach((field) => {
+      form
+        .querySelector<HTMLInputElement>(`[name="${field}"]`)
+        ?.addEventListener('input', () => setError(field, false));
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!submit || submit.disabled) return;
+
+      const data = new FormData(form);
+      const name = String(data.get('name') ?? '').trim();
+      const phone = String(data.get('phone') ?? '').trim();
+
+      const nameBad = name.length < 2;
+      const phoneBad = !isCompletePhone(phone);
+      setError('name', nameBad);
+      setError('phone', phoneBad);
+      if (nameBad || phoneBad) {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        return;
+      }
+
+      if (ok) ok.hidden = true;
+      if (fail) fail.hidden = true;
+      submit.disabled = true;
+      const label = submit.textContent;
+      submit.textContent = 'Отправляем…';
+
+      try {
+        const res = await fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            phone,
+            topic: String(data.get('topic') ?? 'other'),
+            message: String(data.get('message') ?? '').trim(),
+            source: String(data.get('source') ?? ''),
+            company: String(data.get('company') ?? ''),
+            page: location.pathname,
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        form.reset();
+        if (ok) ok.hidden = false;
+      } catch {
+        if (fail) fail.hidden = false;
+      } finally {
+        submit.disabled = false;
+        submit.textContent = label;
+      }
+    });
+  });
+</script>

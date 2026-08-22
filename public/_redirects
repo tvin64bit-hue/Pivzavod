@@ -1,0 +1,31 @@
+# Редиректы со старых URL сайта-донора (Joomla) на новую структуру.
+# Формат Cloudflare Pages: <откуда> <куда> <код>
+# Точечные редиректы записей блога дописывает scripts/migrate-donor.mjs.
+
+# --- Разделы ---
+/index.php/Новости/* /blog 301
+/index.php/Награждения/* /o-kompanii/nagrady 301
+/index.php/Случайные-новости/* /blog 301
+/index.php/Гости/* /blog?kategoriya=raznoe 301
+/index.php/Оборудование/* /o-kompanii/pivovarnya 301
+/index.php/Дегустационный-зал-пива/* /opyt/degustacionny-zal 301
+/index.php/О-нас-пишут/* /blog?kategoriya=pressa 301
+/index.php/Учёба/* /blog?kategoriya=komandirovki 301
+/index.php/Вопросы-к-власти/* /blog?kategoriya=otrasl 301
+/index.php/Плохие-новости/* /blog?kategoriya=otrasl 301
+/index.php/случайные-новости/* /blog 301
+/index.php/Дегустация/* /blog?kategoriya=degustacii 301
+/index.php/Пивной-клуб/* /blog 301
+/index.php/Акции/* /blog 301
+/index.php/Ванны-с-горячим-пивом/* /opyt/spa 301
+/index.php/Экскурсионная-программа/* /opyt 301
+/index.php/Союз-пивоваров/* /soyuz-pivovarov 301
+
+# --- Одиночные страницы донора ---
+/index.php/vakansiya.html /o-kompanii/vakansii 301
+/index.php/phone.html /kontakty 301
+/index.php/zip-technologies.html /o-kompanii/pivovarnya 301
+
+# --- Всё остальное из index.php ---
+/index.php/* /blog 301
+/index.php / 301

@@ -1,0 +1,205 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import { wholesalePrices } from '../../data/content';
+import { wholesaleContacts } from '../../data/site';
+---
+
+<BaseLayout
+  title="Оптовым покупателям"
+  description="Оптовый прайс-лист пивоварен «Лаборатория живого пива» и «Лаборатория авторского пива»: нефильтрованное непастеризованное пиво в еврокегах 30 л. Цены от объёма."
+>
+  <PageHeader
+    label="Где наше пиво"
+    title="Оптовым покупателям"
+    lead="Официальный прайс-лист продукции пивоварен ООО «Лаборатория живого пива» и ООО «Лаборатория авторского пива»."
+    crumbs={[{ label: 'Где наше пиво', href: '/gde-kupit' }, { label: 'Оптовым покупателям' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <p>
+          Всё пиво нефильтрованное, непастеризованное, неосветлённое, срок хранения
+          30 дней, реализуется в пивных еврокегах с фитингом типа «А» из нержавеющей
+          стали объёмом 30 л.
+        </p>
+      </div>
+
+      <dl class="specs">
+        <div class="specs__item"><dt>Тара</dt><dd>Еврокега 30 л, нержавеющая сталь</dd></div>
+        <div class="specs__item"><dt>Фитинг</dt><dd>Тип «А»</dd></div>
+        <div class="specs__item"><dt>Обработка</dt><dd>Без фильтрации, пастеризации и осветления</dd></div>
+        <div class="specs__item"><dt>Срок хранения</dt><dd>30 дней</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Прайс-лист</p>
+        <h2>Цена за кегу 30 л</h2>
+      </div>
+
+      <div class="prices">
+        {wholesalePrices.map((org) => (
+          <div class="price-block">
+            <h3>{org.org}</h3>
+
+            <!-- Десктоп и планшет — таблица -->
+            <div class="table-scroll price-table">
+              <table class="data">
+                <thead>
+                  <tr>
+                    <th scope="col">Объём</th>
+                    <th scope="col">Цена за кегу</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {org.tiers.map((t) => (
+                    <tr>
+                      <td>{t.volume}</td>
+                      <td class="mono">{t.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Мобильный — карточки вместо таблицы (раздел 5) -->
+            <ul class="price-cards">
+              {org.tiers.map((t) => (
+                <li class="price-card">
+                  <span class="price-card__volume">{t.volume}</span>
+                  <span class="price-card__price mono">{t.price}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <p class="placeholder-note">
+        <strong>Требует подтверждения заказчика</strong>
+        Цены перенесены с сайта-донора и используются как есть до подтверждения
+        (пункт «Актуальность цен в оптовом прайсе — [УТОЧНИТЬ]» из чек-листа ассетов ТЗ).
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container opt-bottom">
+      <div class="contacts-block">
+        <p class="label">Прямые контакты</p>
+        <h2>Позвоните — договоримся быстрее</h2>
+        <ul class="contacts-list">
+          {wholesaleContacts.map((c) => (
+            <li>
+              <span class="contacts-list__name">{c.name}</span>
+              <a class="contacts-list__phone" href={c.href}>{c.phone}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <LeadForm
+        topic="wholesale"
+        title="Заявка на оптовые закупки"
+        description="Напишите планируемый объём в месяц и город — подготовим предложение."
+        source="Оптовым покупателям"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-4);
+    margin: var(--s-12) 0 0;
+  }
+  .specs__item {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: var(--s-6);
+  }
+  .specs__item dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+    margin-bottom: var(--s-2);
+  }
+  .specs__item dd { margin: 0; font-size: 15px; line-height: 23px; }
+
+  .prices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-8);
+    margin-bottom: var(--s-8);
+  }
+  .price-block {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: var(--s-8);
+  }
+  .price-block h3 { font-size: 22px; line-height: 30px; margin-bottom: var(--s-6); }
+  .price-cards { display: none; }
+
+  .contacts-block { margin-bottom: var(--s-12); }
+  .contacts-block h2 { font-size: 28px; line-height: 36px; }
+  .contacts-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-4); }
+  .contacts-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--c-border);
+    max-width: 480px;
+    margin: 0;
+  }
+  .contacts-list__name { color: var(--c-muted); font-size: 15px; }
+  .contacts-list__phone {
+    font-family: var(--f-mono);
+    font-size: 16px;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1023px) {
+    .specs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .prices { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 767px) {
+    .specs { grid-template-columns: minmax(0, 1fr); }
+    .price-block { padding: var(--s-6); }
+    .price-table { display: none; }
+    .price-cards {
+      display: grid;
+      gap: var(--s-3);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .price-card {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--s-4);
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-sm);
+      padding: var(--s-4);
+      margin: 0;
+    }
+    .price-card__volume { font-size: 15px; color: var(--c-muted); }
+    .price-card__price { font-size: 18px; font-weight: 500; color: var(--c-accent); }
+    .contacts-list li { flex-direction: column; gap: var(--s-1); }
+  }
+</style>

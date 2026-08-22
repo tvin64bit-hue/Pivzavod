@@ -1,0 +1,198 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import { getCollection, render } from 'astro:content';
+import { CATEGORIES } from '../../content.config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const dateFmt = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+/** Соседние записи той же категории — простая перелинковка архива */
+const related = (await getCollection('blog', ({ data }) => !data.draft))
+  .filter((p) => p.id !== post.id && p.data.category === post.data.category)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsArticle',
+  headline: post.data.title,
+  datePublished: post.data.date.toISOString(),
+  description: post.data.description ?? post.data.excerpt,
+  author: { '@type': 'Organization', name: 'ООО «Лаборатория живого пива»' },
+  publisher: { '@type': 'Organization', name: 'ООО «Лаборатория живого пива»' },
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description ?? post.data.excerpt}
+  schema={schema}
+>
+  <article class="entry">
+    <header class="entry__head grain">
+      <div class="container">
+        <Breadcrumbs items={[{ label: 'Блог', href: '/blog' }, { label: post.data.title }]} />
+        <div class="entry__meta">
+          <a class="tag" href={`/blog?kategoriya=${post.data.category}`}>
+            {CATEGORIES[post.data.category]}
+          </a>
+          <time class="mono entry__date" datetime={post.data.date.toISOString()}>
+            {dateFmt.format(post.data.date)}
+          </time>
+        </div>
+        <h1>{post.data.title}</h1>
+      </div>
+    </header>
+
+    {post.data.cover && (
+      <div class="container entry__cover">
+        <LegacyImage src={post.data.cover} alt={post.data.title} ratio="21 / 9" loading="eager" />
+      </div>
+    )}
+
+    <div class="container">
+      <div class="entry__body prose">
+        <Content />
+      </div>
+
+      {post.data.youtube && (
+        <div class="entry__video">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${post.data.youtube}`}
+            title={post.data.title}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      )}
+
+      {post.data.gallery.length > 1 && (
+        <div class="entry__gallery">
+          {post.data.gallery.map((photo, i) => (
+            <LegacyImage src={photo} alt={`${post.data.title} — фото ${i + 1}`} ratio="4 / 3" />
+          ))}
+        </div>
+      )}
+
+      {post.data.legacyUrl && (
+        <p class="entry__origin caption mono">
+          Материал перенесён из архива сайта пивоварни (публикация {dateFmt.format(post.data.date)}).
+        </p>
+      )}
+    </div>
+
+    {related.length > 0 && (
+      <section class="section section--tight">
+        <div class="container">
+          <div class="section-head">
+            <p class="label">Ещё в категории «{CATEGORIES[post.data.category]}»</p>
+          </div>
+          <div class="grid grid--3">
+            {related.map((item) => (
+              <a class="card related" href={`/blog/${item.id}`}>
+                <time class="mono related__date" datetime={item.data.date.toISOString()}>
+                  {dateFmt.format(item.data.date)}
+                </time>
+                <h2 class="related__title">{item.data.title}</h2>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </article>
+</BaseLayout>
+
+<style>
+  .entry__head {
+    position: relative;
+    padding-block: var(--s-16) var(--s-12);
+    background:
+      radial-gradient(120% 140% at 12% 0%, rgba(244, 169, 59, 0.13), transparent 58%),
+      var(--c-bg);
+  }
+  .entry__head > * { position: relative; z-index: 2; }
+  .entry__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+    margin-bottom: var(--s-6);
+  }
+  .entry__meta .tag { text-decoration: none; }
+  .entry__meta .tag:hover { border-color: var(--c-accent); color: var(--c-accent); }
+  .entry__date { font-size: 13px; color: var(--c-muted); }
+  .entry__head h1 { max-width: 24ch; margin-bottom: 0; }
+
+  .entry__cover { margin-top: var(--s-12); }
+
+  .entry__body {
+    margin-top: var(--s-12);
+    font-size: 17px;
+    line-height: 29px;
+  }
+  .entry__body :global(h2) { font-size: 28px; line-height: 36px; margin-top: var(--s-12); }
+  .entry__body :global(h3) { font-size: 22px; line-height: 30px; margin-top: var(--s-8); }
+  .entry__body :global(img) { border-radius: var(--r-md); margin-block: var(--s-6); }
+  .entry__body :global(blockquote) {
+    margin: var(--s-8) 0;
+    padding-left: var(--s-6);
+    border-left: 2px solid var(--c-accent);
+    color: var(--c-muted);
+    font-style: italic;
+  }
+
+  .entry__video {
+    aspect-ratio: 16 / 9;
+    margin-top: var(--s-12);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+  }
+  .entry__video iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  .entry__gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-4);
+    margin-top: var(--s-12);
+  }
+
+  .entry__origin {
+    margin-top: var(--s-12);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--c-border);
+    font-size: 12px;
+  }
+
+  .related__date {
+    display: block;
+    font-size: 12px;
+    color: var(--c-muted);
+    margin-bottom: var(--s-3);
+  }
+  .related__title { font-size: 18px; line-height: 26px; margin: 0; }
+
+  @media (max-width: 1023px) {
+    .entry__gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 767px) {
+    .entry__head { padding-block: var(--s-12) var(--s-8); }
+    .entry__body { font-size: 16px; line-height: 27px; }
+    .entry__gallery { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

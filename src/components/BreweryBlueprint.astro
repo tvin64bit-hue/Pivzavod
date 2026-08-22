@@ -1,0 +1,172 @@
+---
+/**
+ * Фишка №2 дизайн-системы: «чертёж пивоварни» на скролле.
+ * SVG-линии оборудования дорисовываются через stroke-dashoffset +
+ * IntersectionObserver при появлении блока в зоне видимости.
+ * Схема условная: варочный порядок → ЦКТ → фильтр → розлив в кеги.
+ */
+---
+
+<figure class="bp" data-blueprint>
+  <svg viewBox="0 0 900 320" role="img" aria-labelledby="bp-title bp-desc" class="bp__svg">
+    <title id="bp-title">Схема оборудования пивоварни</title>
+    <desc id="bp-desc">
+      Условный чертёж технологической линии: варочный порядок, вирпул,
+      цилиндро-конические танки брожения, фильтрация и розлив в кеги.
+    </desc>
+
+    <g class="bp__lines" fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round">
+      <!-- Варочный порядок -->
+      <path d="M60 210V120a46 46 0 0 1 92 0v90z" />
+      <path d="M60 210h92" />
+      <path d="M84 120h44" />
+      <circle cx="106" cy="96" r="9" />
+      <path d="M106 87V60" />
+
+      <!-- Труба к вирпулу -->
+      <path d="M152 178h68" />
+      <path d="M204 170l16 8-16 8" />
+
+      <!-- Вирпул -->
+      <path d="M220 210V132h84v78z" />
+      <path d="M220 210h84" />
+      <path d="M240 152c14 18 30 18 44 0" />
+
+      <!-- Труба к ЦКТ -->
+      <path d="M304 178h56" />
+      <path d="M344 170l16 8-16 8" />
+
+      <!-- ЦКТ №1 -->
+      <path d="M360 96h72v112l-36 40-36-40z" />
+      <path d="M360 130h72" />
+      <path d="M396 96V72" />
+
+      <!-- ЦКТ №2 -->
+      <path d="M452 96h72v112l-36 40-36-40z" />
+      <path d="M452 130h72" />
+      <path d="M488 96V72" />
+
+      <!-- Труба к фильтру -->
+      <path d="M524 178h52" />
+      <path d="M560 170l16 8-16 8" />
+
+      <!-- Фильтр / теплообменник -->
+      <path d="M576 140h96v76h-96z" />
+      <path d="M576 164h96M576 190h96" />
+      <path d="M600 140v76M624 140v76M648 140v76" />
+
+      <!-- Труба к розливу -->
+      <path d="M672 178h48" />
+      <path d="M704 170l16 8-16 8" />
+
+      <!-- Кеги 30 л -->
+      <path d="M720 148h48v68h-48z" />
+      <path d="M726 148v68M762 148v68" />
+      <path d="M732 140h24v8h-24z" />
+      <path d="M796 168h48v48h-48z" />
+      <path d="M802 168v48M838 168v48" />
+      <path d="M808 160h24v8h-24z" />
+
+      <!-- Пол -->
+      <path d="M40 258h824" />
+    </g>
+
+    <g class="bp__labels" fill="currentColor">
+      <text x="106" y="286" text-anchor="middle">варочный порядок</text>
+      <text x="262" y="286" text-anchor="middle">вирпул</text>
+      <text x="442" y="286" text-anchor="middle">ЦКТ</text>
+      <text x="624" y="286" text-anchor="middle">фильтрация</text>
+      <text x="790" y="286" text-anchor="middle">кеги 30 л</text>
+    </g>
+  </svg>
+  <figcaption class="caption">
+    Технологическая линия «Лаборатории»: от варочного порядка до еврокега с фитингом типа «А».
+  </figcaption>
+</figure>
+
+<style>
+  .bp {
+    margin: 0;
+    padding: var(--s-8);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+  }
+  .bp__svg {
+    width: 100%;
+    height: auto;
+    color: var(--c-accent);
+    display: block;
+  }
+  .bp__labels text {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    fill: var(--c-muted);
+  }
+  .bp figcaption { margin-top: var(--s-6); }
+
+  /* Исходное состояние: линии скрыты, длина задаётся скриптом */
+  .bp__lines > * {
+    stroke-dasharray: var(--len, 1000);
+    stroke-dashoffset: var(--len, 1000);
+  }
+  .bp.is-drawn .bp__lines > * {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1400ms cubic-bezier(0.65, 0, 0.35, 1);
+    transition-delay: var(--delay, 0ms);
+  }
+
+  .bp__labels { opacity: 0; transition: opacity 600ms ease 1100ms; }
+  .bp.is-drawn .bp__labels { opacity: 1; }
+
+  /* Без анимации — сразу готовый чертёж */
+  @media (prefers-reduced-motion: reduce) {
+    .bp__lines > * { stroke-dashoffset: 0; }
+    .bp__labels { opacity: 1; }
+  }
+
+  @media (max-width: 767px) {
+    .bp { padding: var(--s-4); }
+    .bp__labels text { font-size: 14px; }
+  }
+</style>
+
+<script>
+  const blueprint = document.querySelector<HTMLElement>('[data-blueprint]');
+
+  if (blueprint) {
+    const shapes = Array.from(
+      blueprint.querySelectorAll<SVGGeometryElement>('.bp__lines > *'),
+    );
+
+    // Реальная длина каждого контура — иначе dash-анимация идёт рывками
+    shapes.forEach((shape, i) => {
+      const len = Math.ceil(shape.getTotalLength());
+      shape.style.setProperty('--len', String(len));
+      // Линии проявляются слева направо, вслед за движением сусла
+      shape.style.setProperty('--delay', `${i * 28}ms`);
+    });
+
+    const draw = () => blueprint.classList.add('is-drawn');
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              draw();
+              io.disconnect();
+            }
+          });
+        },
+        { threshold: 0.25 },
+      );
+      io.observe(blueprint);
+    } else {
+      draw();
+    }
+  }
+</script>

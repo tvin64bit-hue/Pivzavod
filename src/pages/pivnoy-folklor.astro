@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { folklore } from '../data/content';
+---
+
+<BaseLayout
+  title="Пивной фольклор"
+  description="Народные байки о пользе пива — с иронией и без медицинских рекомендаций. Страничка с юмором от «Лаборатории живого пива»."
+>
+  <PageHeader
+    label="Несерьёзно"
+    title="Пивной фольклор"
+    lead="За 200+ лет пивоварения люди чего только не придумали про пользу пива — от лечения бессонницы до продления жизни. Мы это не проверяли и вам не советуем на это рассчитывать, но звучит красиво:"
+    crumbs={[{ label: 'Пивной фольклор' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <ul class="tales">
+        {folklore.map((tale, i) => (
+          <li class="tale card">
+            <span class="tale__num mono">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h2 class="tale__claim">{tale.claim}</h2>
+              <p class="caption tale__source">— {tale.source}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <!--
+        Дисклеймер обязателен: раздел 4.7 ТЗ прямо запрещает его убирать
+        и уменьшать шрифт ниже размера Caption. Связано с ограничениями
+        ФЗ «О рекламе» на заявления о пользе алкоголя для здоровья.
+      -->
+      <aside class="disclaimer">
+        <p>
+          <em>
+            Пейте с удовольствием, но в меру — это не медицинские рекомендации,
+            а страничка с юмором.
+          </em>
+        </p>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tales {
+    list-style: none;
+    margin: 0 0 var(--s-12);
+    padding: 0;
+    display: grid;
+    gap: var(--s-4);
+    max-width: 820px;
+  }
+  .tale {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: var(--s-6);
+    align-items: start;
+    margin: 0;
+  }
+  .tale__num {
+    font-size: 13px;
+    color: var(--c-ochre);
+    letter-spacing: 0.08em;
+    padding-top: 6px;
+  }
+  .tale__claim {
+    font-size: 22px;
+    line-height: 30px;
+    margin-bottom: var(--s-2);
+  }
+  .tale__source { margin: 0; }
+
+  /* Размер дисклеймера — не меньше Caption (14/22), см. ТЗ */
+  .disclaimer {
+    max-width: 820px;
+    background: rgba(244, 169, 59, 0.08);
+    border: 1px solid rgba(244, 169, 59, 0.35);
+    border-radius: var(--r-md);
+    padding: var(--s-6) var(--s-8);
+  }
+  .disclaimer p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--c-text);
+  }
+
+  @media (max-width: 767px) {
+    .tale { grid-template-columns: 34px 1fr; gap: var(--s-4); }
+    .tale__claim { font-size: 19px; line-height: 27px; }
+    .disclaimer { padding: var(--s-6); }
+    .disclaimer p { font-size: 15px; line-height: 24px; }
+  }
+</style>

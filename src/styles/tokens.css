@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Дизайн-система «Лаборатория» — раздел 3 ТЗ.
+   Все значения взяты из таблиц ТЗ буквально, не подбирались заново.
+   ========================================================================== */
+
+:root {
+  /* --- Цвета (раздел 3 «Цвета») --- */
+  --c-bg:            #1C1410;  /* Фон основной (тёмный) */
+  --c-surface:       #2B211B;  /* Фон второй: карточки, панели, футер */
+  --c-accent:        #F4A93B;  /* Акцент основной (янтарь) */
+  --c-accent-hover:  #E0982E;  /* hover primary-кнопки */
+  --c-accent-active: #C97F1F;  /* active primary-кнопки */
+  --c-ochre:         #8A5C2B;  /* Акцент вторичный (охра) */
+  --c-text:          #FAF3E8;  /* Текст основной */
+  --c-muted:         #C9B8A4;  /* Текст приглушённый */
+  --c-border:        rgba(250, 243, 232, 0.12);
+  --c-success:       #7FA66B;
+  --c-error:         #E2604A;
+
+  --c-disabled-bg:   #4A3A2E;
+  --c-disabled-text: #8A7566;
+
+  /* --- Типографика --- */
+  --f-display: 'Fraunces', 'Georgia', 'Times New Roman', serif;
+  --f-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --f-mono:    'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* --- Шкала отступов: шаг 4px, ряд 4·8·12·16·24·32·48·64·96 --- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+  --s-16: 64px;
+  --s-24: 96px;
+
+  /* --- Сетка --- */
+  --container: 1200px;
+  --gutter: 24px;
+
+  /* --- Радиусы (минимальные скругления 4–6px) --- */
+  --r-sm: 4px;
+  --r-md: 6px;
+
+  /* --- Движение --- */
+  --t-fast: 200ms ease;
+  --t-flip: 400ms ease-in-out;
+
+  /* Grain-текстура (фишка №3): процедурный шум, без внешних файлов */
+  --grain-url: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+
+  --header-h: 84px;
+  --z-header: 100;
+  --z-overlay: 200;
+  --z-agegate: 300;
+}
+
+/* Брейкпоинты (справочно, используются в media-запросах по месту):
+   моб. ≤480px · моб.-large 481–767px · планшет 768–1023px
+   десктоп 1024–1439px · широкий ≥1440px */

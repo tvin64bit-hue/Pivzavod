@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import { contacts } from '../../data/site';
+---
+
+<BaseLayout
+  title="Пивные SPA-процедуры"
+  description="Пивные SPA-процедуры «Лаборатории живого пива»: тёплая ванна с добавлением горячего пива. Запись по телефону или через форму заявки."
+>
+  <PageHeader
+    label="Впечатления"
+    title="Пивные SPA-процедуры"
+    lead="Уникальная процедура — тёплая ванна с добавлением горячего пива."
+    crumbs={[{ label: 'Впечатления', href: '/opyt' }, { label: 'Пивные SPA-процедуры' }]}
+  />
+
+  <section class="section">
+    <div class="container spa-layout">
+      <div>
+        <div class="prose">
+          <p class="label">Что это</p>
+          <p>
+            Уникальная процедура — тёплая ванна с добавлением горячего пива.
+            Подробности и запись — по телефону или через форму заявки.
+          </p>
+          <p>
+            <a href={contacts.officePhone.href} class="spa-phone mono">{contacts.officePhone.label}</a>
+          </p>
+        </div>
+
+        <p class="placeholder-note spa-note">
+          <strong>Временный текст — заменить</strong>
+          Описание процедуры, длительность, цена и противопоказания на сайте-доноре
+          отсутствуют. Пункт «Описание SPA-процедуры — [ЗАПОЛНИТЬ]» из чек-листа
+          ассетов ТЗ: как только заказчик передаст данные, этот блок и заглушка
+          выше заменяются полноценным описанием.
+        </p>
+
+        <dl class="spa-specs">
+          <div class="spa-spec">
+            <dt>Длительность</dt>
+            <dd class="spa-spec--empty">уточняется</dd>
+          </div>
+          <div class="spa-spec">
+            <dt>Стоимость</dt>
+            <dd class="spa-spec--empty">уточняется</dd>
+          </div>
+          <div class="spa-spec">
+            <dt>Противопоказания</dt>
+            <dd class="spa-spec--empty">уточняются</dd>
+          </div>
+        </dl>
+      </div>
+
+      <LeadForm
+        topic="tour"
+        title="Записаться на процедуру"
+        description="Оставьте контакты — расскажем про условия, длительность и свободное время."
+        source="Пивные SPA-процедуры"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .spa-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-12);
+    align-items: start;
+  }
+  .spa-phone { font-size: 20px; text-decoration: none; }
+  .spa-note { margin-top: var(--s-8); }
+
+  .spa-specs { margin: var(--s-8) 0 0; border-top: 1px solid var(--c-border); }
+  .spa-spec {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .spa-spec dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+  }
+  .spa-spec dd { margin: 0; font-size: 14px; }
+  .spa-spec--empty {
+    font-family: var(--f-mono);
+    color: var(--c-ochre);
+    font-size: 13px;
+  }
+
+  @media (max-width: 1023px) {
+    .spa-layout { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+  }
+</style>

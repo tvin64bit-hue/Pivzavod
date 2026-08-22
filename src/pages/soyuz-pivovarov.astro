@@ -1,0 +1,132 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+---
+
+<BaseLayout
+  title="Союз пивоваров Южного Урала"
+  description="Союз пивоваров Южного Урала создан в 2013 году по инициативе пивоварен малой мощности Челябинской области. Председатель — Ройтенберг И.А. Контакты и задачи Союза."
+>
+  <PageHeader
+    label="Отрасль"
+    title="Союз пивоваров Южного Урала"
+    lead="Отраслевое объединение пивоварен малой мощности Челябинской области. Работает с 2013 года."
+    crumbs={[{ label: 'Союз пивоваров' }]}
+  />
+
+  <section class="section">
+    <div class="container soyuz">
+      <div class="prose">
+        <p class="label">О Союзе</p>
+        <p>
+          По инициативе предприятий пивоваренной отрасли малой мощности Челябинской
+          области в начале 2013 года было принято решение о создании Союза пивоваров
+          Южного Урала. Председателем Союза единогласно выбран директор «Лаборатории
+          пива» Ройтенберг Илья Александрович.
+        </p>
+        <p>
+          Союз содействует членам в развитии традиционного пивоварения, защищает их
+          права и законные интересы, развивает сотрудничество с коллегами в России
+          и за рубежом, организует обмен опытом — семинары, конференции, съезды,
+          фестивали.
+        </p>
+        <p>
+          <a href="https://piv-souz.ru" target="_blank" rel="noopener noreferrer">
+            piv-souz.ru ↗
+          </a>
+        </p>
+      </div>
+
+      <aside class="soyuz__card card">
+        <p class="label">Координаты Союза</p>
+        <dl class="soyuz__rows">
+          <div class="soyuz__row">
+            <dt>Адрес</dt>
+            <dd>ул. Карпинского, 62, офис 1</dd>
+          </div>
+          <div class="soyuz__row">
+            <dt>Часы приёма</dt>
+            <dd>14:00–17:00<br /><span class="caption">выходные — сб, вс</span></dd>
+          </div>
+          <div class="soyuz__row">
+            <dt>Председатель</dt>
+            <dd>Ройтенберг И.А.</dd>
+          </div>
+          <div class="soyuz__row">
+            <dt>Телефон</dt>
+            <dd><a href="tel:+79080857401">8 (908) 085-74-01</a></dd>
+          </div>
+          <div class="soyuz__row">
+            <dt>Сайт</dt>
+            <dd><a href="https://piv-souz.ru" target="_blank" rel="noopener noreferrer">piv-souz.ru ↗</a></dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="grid grid--3">
+        <div class="card">
+          <p class="label">Задача 1</p>
+          <h2 class="task-title">Развитие традиционного пивоварения</h2>
+          <p class="caption">Содействие членам Союза в производстве живого пива по классическим технологиям.</p>
+        </div>
+        <div class="card">
+          <p class="label">Задача 2</p>
+          <h2 class="task-title">Защита прав и интересов</h2>
+          <p class="caption">Представление позиции малых пивоварен в отраслевых и регуляторных вопросах.</p>
+        </div>
+        <div class="card">
+          <p class="label">Задача 3</p>
+          <h2 class="task-title">Обмен опытом</h2>
+          <p class="caption">Семинары, конференции, съезды и фестивали — в России и за рубежом.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .soyuz {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-16);
+    align-items: start;
+  }
+  .soyuz__rows { margin: 0; }
+  .soyuz__row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .soyuz__row:last-child { border-bottom: 0; }
+  .soyuz__row dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    padding-top: 4px;
+  }
+  .soyuz__row dd { margin: 0; font-size: 15px; }
+  .soyuz__row a { text-decoration: none; }
+
+  .task-title {
+    font-family: var(--f-display);
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    margin-bottom: var(--s-3);
+  }
+
+  @media (max-width: 1023px) {
+    .soyuz { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+  }
+  @media (max-width: 767px) {
+    .soyuz__row { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
+  }
+</style>

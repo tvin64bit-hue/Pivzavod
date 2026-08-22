@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Страница не найдена"
+  description="Такой страницы на сайте «Лаборатории живого пива» нет."
+  noindex
+>
+  <section class="section notfound">
+    <div class="container">
+      <p class="label">Ошибка 404</p>
+      <h1>Проба не удалась</h1>
+      <p class="lead">
+        Такой страницы у нас нет. Возможно, она переехала при переносе сайта —
+        загляните в блог или начните с главной.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn--primary" href="/">На главную</a>
+        <a class="btn btn--secondary" href="/blog">В блог</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound { padding-block: var(--s-24); }
+  .notfound h1 { margin-bottom: var(--s-6); }
+  .notfound .lead { margin-bottom: var(--s-12); }
+</style>

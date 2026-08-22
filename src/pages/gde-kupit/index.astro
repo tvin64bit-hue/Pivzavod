@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+
+const sections = [
+  {
+    href: '/gde-kupit/tochki-prodazh',
+    label: 'Розница',
+    title: 'Точки продаж',
+    text: 'Шесть собственных точек в Челябинске: адреса, часы работы и как нас найти внутри торгового комплекса.',
+  },
+  {
+    href: '/gde-kupit/opt',
+    label: 'B2B',
+    title: 'Оптовым покупателям',
+    text: 'Прайс-лист на еврокеги 30 л, условия по объёмам и прямые контакты для переговоров.',
+  },
+  {
+    href: '/gde-kupit/podlinnost',
+    label: 'Защита бренда',
+    title: 'Осторожно, подделки',
+    text: 'Если наше пиво предлагают где-то ещё — это не наше пиво. Что делать, если столкнулись.',
+  },
+];
+---
+
+<BaseLayout
+  title="Где наше пиво"
+  description="Где купить и попробовать пиво «Лаборатории живого пива» в Челябинске: шесть фирменных точек продаж, оптовые поставки, защита от подделок."
+>
+  <PageHeader
+    label="Где наше пиво"
+    title="Только здесь и больше нигде"
+    lead="Наше пиво можно попробовать или купить только здесь — мы не продаём его через посредников и всегда актуализируем список мест."
+    crumbs={[{ label: 'Где наше пиво' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--3">
+        {sections.map((s) => (
+          <a class="card" href={s.href}>
+            <p class="label">{s.label}</p>
+            <h2 class="card__title">{s.title}</h2>
+            <p class="caption">{s.text}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .card__title {
+    font-family: var(--f-display);
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    margin-bottom: var(--s-3);
+  }
+</style>

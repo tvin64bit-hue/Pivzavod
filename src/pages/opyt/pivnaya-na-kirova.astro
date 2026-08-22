@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import YandexMap from '../../components/YandexMap.astro';
+---
+
+<BaseLayout
+  title="Пивная на Кирова"
+  description="Пивная на ул. Кирова, 104 в Челябинске: продукция пивоварен «Лаборатория живого пива» и «Лаборатория авторского пива». Как найти и телефон."
+>
+  <PageHeader
+    label="Впечатления"
+    title="Пивная на Кирова"
+    lead="Ул. Кирова, 104 — со стороны ул. Коммуны, рядом с «Молодёжная мода»."
+    crumbs={[{ label: 'Впечатления', href: '/opyt' }, { label: 'Пивная на Кирова' }]}
+  />
+
+  <section class="section">
+    <div class="container kirova">
+      <div class="kirova__text">
+        <p class="label">Что там</p>
+        <p>
+          По адресу ул. Кирова, 104 (со стороны ул. Коммуны, рядом с «Молодёжная
+          мода») работает пивная, где продаётся продукция пивоварен «Лаборатория
+          живого пива» и «Лаборатория авторского пива».
+        </p>
+
+        <dl class="kirova__specs">
+          <div class="kirova__spec">
+            <dt>Адрес</dt>
+            <dd>ул. Кирова, 104, Челябинск</dd>
+          </div>
+          <div class="kirova__spec">
+            <dt>Как найти</dt>
+            <dd>со стороны ул. Коммуны, рядом с «Молодёжная мода»</dd>
+          </div>
+          <div class="kirova__spec">
+            <dt>Телефон</dt>
+            <dd><a href="tel:+79227505502">+7 (922) 750-55-02</a></dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="kirova__media">
+        <LegacyImage src="0210.jpg" alt="Пивная на улице Кирова, 104" ratio="4 / 3" loading="eager" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <YandexMap
+        query="Челябинск, улица Кирова, 104"
+        title="Карта: пивная на улице Кирова, 104"
+        height={420}
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .kirova {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .kirova__text p { max-width: 52ch; }
+
+  .kirova__specs { margin: var(--s-8) 0 0; border-top: 1px solid var(--c-border); }
+  .kirova__spec {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .kirova__spec dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    padding-top: 4px;
+  }
+  .kirova__spec dd { margin: 0; font-size: 15px; }
+  .kirova__spec a { text-decoration: none; }
+
+  @media (max-width: 1023px) { .kirova { gap: var(--s-8); } }
+  @media (max-width: 767px) {
+    .kirova { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+    .kirova__media { order: -1; }
+    .kirova__spec { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
+  }
+</style>

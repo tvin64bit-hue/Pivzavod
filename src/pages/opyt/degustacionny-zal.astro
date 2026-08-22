@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import { tastingGallery, tastingMenuPhoto } from '../../data/content';
+---
+
+<BaseLayout
+  title="Дегустационный зал"
+  description="Дегустационный зал «Лаборатории живого пива» в Челябинске: ул. Карпинского, 62, 3 этаж. Меню, интерьер и запись на дегустацию."
+>
+  <PageHeader
+    label="Впечатления"
+    title="Дегустационный зал"
+    lead="Приглашаем гостей посетить дегустационный зал, расположенный на ул. Карпинского, 62 (3 этаж), попробовать наше пиво."
+    crumbs={[{ label: 'Впечатления', href: '/opyt' }, { label: 'Дегустационный зал' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="menu-block">
+        <div class="menu-block__text">
+          <p class="label">Меню зала</p>
+          <h2>Что наливаем</h2>
+          <p>
+            Живое нефильтрованное пиво собственной варки — то же, что уезжает
+            в кегах в наши точки продаж, только на два этажа ближе к варочному цеху.
+          </p>
+          <a class="btn btn--primary" href="#zayavka">Записаться на дегустацию</a>
+        </div>
+        <div class="menu-block__media">
+          <LegacyImage
+            src={tastingMenuPhoto}
+            alt="Меню дегустационного зала «Лаборатории живого пива»"
+            ratio="3 / 4"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Интерьер</p>
+        <h2>Как выглядит зал</h2>
+      </div>
+
+      <!-- Bento на десктопе, горизонтальный скролл на мобильном (раздел 5) -->
+      <div class="bento">
+        {tastingGallery.map((photo, i) => (
+          <div class:list={['bento__item', i === 0 && 'bento__item--wide', i === 3 && 'bento__item--tall']}>
+            <LegacyImage src={photo} alt={`Дегустационный зал, фото ${i + 1}`} ratio="4 / 3" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <LeadForm
+        id="zayavka"
+        topic="tour"
+        title="Записаться на дегустацию"
+        description="Напишите желаемую дату и число гостей — подтвердим время и расскажем, как пройти."
+        source="Дегустационный зал"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .menu-block {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .menu-block__text p { max-width: 52ch; margin-bottom: var(--s-8); }
+
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 200px;
+    gap: var(--s-4);
+  }
+  .bento__item { min-height: 0; }
+  .bento__item :global(figure) { height: 100%; }
+  .bento__item--wide { grid-column: span 2; grid-row: span 2; }
+  .bento__item--tall { grid-row: span 2; }
+
+  @media (max-width: 1023px) {
+    .menu-block { gap: var(--s-8); }
+    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 220px; }
+    .bento__item--wide, .bento__item--tall { grid-column: auto; grid-row: auto; }
+  }
+
+  @media (max-width: 767px) {
+    .menu-block { grid-template-columns: minmax(0, 1fr); }
+    .menu-block__media { order: -1; max-width: 320px; }
+    .menu-block__text .btn { width: 100%; }
+
+    .bento {
+      display: flex;
+      grid-template-columns: none;
+      gap: var(--s-3);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      padding-bottom: var(--s-3);
+      scrollbar-width: none;
+    }
+    .bento::-webkit-scrollbar { display: none; }
+    .bento__item {
+      flex: 0 0 78%;
+      scroll-snap-align: center;
+    }
+  }
+</style>
