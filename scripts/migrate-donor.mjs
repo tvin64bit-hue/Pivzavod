@@ -226,6 +226,20 @@ function parseDate(container, url) {
 }
 
 /**
+ * Год из текста статьи, когда полной даты нет («…выставке "Золотая осень" 2018»).
+ * Ставим 1 января этого года: это заведомо приблизительно, запись уходит в draft,
+ * но так архивный материал не притворяется свежим, получив сегодняшнее число.
+ */
+function yearFallback(container, title) {
+  const years = `${title} ${htmlToText(container)}`.match(/\b(20[0-2]\d)\b/g);
+  if (!years) return null;
+  // Берём самый поздний: в тексте могут упоминаться прошлые годы
+  const year = Math.max(...years.map(Number));
+  if (year < 2005 || year > new Date().getUTCFullYear()) return null;
+  return new Date(Date.UTC(year, 0, 1));
+}
+
+/**
  * Хвост шаблона Joomla, попадающий внутрь контейнера статьи:
  * навигация «< Предыдущая / Следующая >» и футерная линкоферма.
  * Ленивый поиск закрывающего </div> до них дотягивается, поэтому режем по метке.
@@ -435,13 +449,29 @@ async function migratePage(url, index, total) {
   // Заголовок и дата печатаются сразу: если шаблон донора не распознан,
   // это видно на первой же статье, а не после полного обхода
   console.log(`      заголовок: ${title}`);
-  console.log(`      дата: ${date ? date.toISOString().slice(0, 10) : 'не распознана'}`);
   const body = parseBody(container);
   // Только картинки из тела статьи — иначе обложкой станет логотип шаблона
   const images = parseImages(container, url);
 
+  const approxDate = date ? null : yearFallback(container, title);
+  console.log(
+    `      дата: ${
+      date
+        ? date.toISOString().slice(0, 10)
+        : approxDate
+          ? `${approxDate.toISOString().slice(0, 10)} (только год, условно)`
+          : 'не распознана'
+    }`,
+  );
+
   if (!date) {
-    report.failures.push({ kind: 'date', url, error: 'дата публикации не распознана' });
+    report.failures.push({
+      kind: 'date',
+      url,
+      error: approxDate
+        ? `полная дата не найдена, распознан только год ${approxDate.getUTCFullYear()}`
+        : 'дата публикации не распознана',
+    });
   }
 
   const localImages = [];
@@ -461,13 +491,19 @@ async function migratePage(url, index, total) {
   const frontmatter = [
     '---',
     `title: ${yamlString(title)}`,
-    `date: ${(date ?? new Date()).toISOString().slice(0, 10)}`,
+    `date: ${(date ?? approxDate ?? new Date()).toISOString().slice(0, 10)}`,
     `category: ${categoryFor(url)}`,
     `excerpt: ${yamlString(excerptFrom(body))}`,
     localImages[0] ? `cover: ${localImages[0]}` : null,
     localImages.length > 1 ? `gallery:\n${localImages.map((n) => `  - ${n}`).join('\n')}` : null,
     `legacyUrl: ${url}`,
-    !date ? 'draft: true  # дата не распознана — проверьте перед публикацией' : null,
+    !date
+      ? `draft: true  # ${
+          approxDate
+            ? `распознан только год ${approxDate.getUTCFullYear()}, число условное — уточните`
+            : 'дата не распознана — проставьте вручную'
+        }`
+      : null,
     '---',
     '',
     body,

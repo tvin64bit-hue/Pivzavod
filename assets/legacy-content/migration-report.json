@@ -1,15 +1,21 @@
 {
-  "startedAt": "2026-08-22T15:51:59.298Z",
+  "startedAt": "2026-08-22T16:48:11.045Z",
   "pages": {
-    "total": 3,
-    "ok": 3,
+    "total": 1,
+    "ok": 1,
     "failed": 0
   },
   "images": {
-    "total": 3,
-    "ok": 3,
+    "total": 2,
+    "ok": 2,
     "skipped": 0
   },
-  "failures": [],
-  "finishedAt": "2026-08-22T15:52:31.020Z"
+  "failures": [
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/q-q-2018.html",
+      "error": "полная дата не найдена, распознан только год 2018"
+    }
+  ],
+  "finishedAt": "2026-08-22T16:48:11.062Z"
 }

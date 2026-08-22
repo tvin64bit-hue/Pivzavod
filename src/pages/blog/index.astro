@@ -25,8 +25,11 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-/** Сколько из 153 архивных URL донора уже перенесено */
-const TOTAL_LEGACY = 153;
+/**
+ * Сколько статей донора уже перенесено. В sitemap 153 адреса, но девять из них —
+ * корень и витрины разделов, а не материалы: их скрипт миграции пропускает.
+ */
+const TOTAL_LEGACY = 144;
 const migrated = posts.length;
 ---
 
@@ -84,10 +87,9 @@ const migrated = posts.length;
       {migrated < TOTAL_LEGACY && (
         <p class="placeholder-note feed__note">
           <strong>Архив переносится</strong>
-          Опубликовано {migrated} из {TOTAL_LEGACY} записей сайта-донора. Остальные
-          выгружаются скриптом <code>npm run migrate</code> — он недоступен из текущего
-          окружения, пока домен pivzavod74.ru закрыт сетевой политикой. Подробности
-          и порядок запуска — в README, раздел «Миграция контента».
+          Опубликовано {migrated} из {TOTAL_LEGACY} статей сайта-донора. Остальные
+          переносятся workflow «Миграция контента с донора» во вкладке Actions.
+          Подробности и порядок запуска — в README, раздел «Миграция контента».
         </p>
       )}
     </div>
