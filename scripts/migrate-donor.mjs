@@ -129,10 +129,10 @@ function htmlToText(html) {
       .replace(/<[^>]+>/g, ''),
   )
     .replace(/[ \t ]+/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
     .split('\n')
     .map((line) => line.trim())
     .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
@@ -151,69 +151,108 @@ function extract(html, patterns) {
 }
 
 /**
- * Заголовок статьи. Донор — Joomla примерно 2011 года, где заголовок носит
- * класс contentheading, но тег вокруг него зависит от шаблона: в табличной
- * вёрстке это <td>, в более поздних — <div>, <h1> или <a>. Поэтому после
- * точных селекторов идёт обобщённый по самому классу, и только потом —
- * <title>, который у донора содержит одно название сайта.
+ * Заголовок статьи. Донор — Joomla 1.5 с табличной вёрсткой:
+ *   <h2 class="contentheading"><a class="contentpagetitle">Заголовок</a></h2>
+ * Класс contentheading при этом носит и ячейка со слоганом в шапке
+ * («Качество выше цены!»), одинаковая на всех страницах, — поэтому искать
+ * по одному этому классу нельзя, нужен contentpagetitle.
+ *
+ * Запасной вариант — <title>, который у донора устроен как «Заголовок | Раздел».
  */
 function parseTitle(html) {
-  const raw =
-    extract(html, [
-      /<h1[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/h1>/i,
-      /<h2[^>]*class="[^"]*item-?title[^"]*"[^>]*>([\s\S]*?)<\/h2>/i,
-      /<div[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-      [/<([a-z]+)[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/\1>/i, 2],
-      [/<([a-z]+)[^>]*class="[^"]*(?:item-?title|article-?title|page-?title)[^"]*"[^>]*>([\s\S]*?)<\/\1>/i, 2],
-      /<h1[^>]*>([\s\S]*?)<\/h1>/i,
-      /<h2[^>]*>([\s\S]*?)<\/h2>/i,
-      /<title[^>]*>([\s\S]*?)<\/title>/i,
-    ]) ?? '';
+  const raw = extract(html, [
+    /<a[^>]*class="[^"]*contentpagetitle[^"]*"[^>]*>([\s\S]*?)<\/a>/i,
+    /<h2[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/h2>/i,
+    /<h1[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/h1>/i,
+    [/<([a-z]+)[^>]*class="[^"]*(?:item-?title|article-?title|page-?title)[^"]*"[^>]*>([\s\S]*?)<\/\1>/i, 2],
+  ]);
 
-  const text = htmlToText(raw).split('\n')[0].trim();
-  // «Заголовок — Пивзавод74» → «Заголовок»: хвост с названием сайта не нужен
-  return text.replace(/\s*[|—–-]\s*Пивзавод\S*\s*$/i, '').trim();
+  const fromMarkup = raw ? htmlToText(raw).split('\n')[0].trim() : '';
+  if (fromMarkup) return fromMarkup;
+
+  const docTitle = extract(html, [/<title[^>]*>([\s\S]*?)<\/title>/i]) ?? '';
+  return htmlToText(docTitle)
+    .split('\n')[0]
+    // «Золото «Золотой осени» 2018 | Награждения» → без хвоста с разделом
+    .replace(/\s*\|\s*[^|]*$/, '')
+    .replace(/\s*[—–-]\s*Пивзавод\S*\s*$/i, '')
+    .trim();
 }
 
-function parseDate(html) {
-  // 1) машинночитаемая дата в <time datetime="...">
-  const iso = extract(html, [/<time[^>]*datetime="([^"]+)"/i]);
+/** Дата из псевдонима статьи на доноре: «2018-05-02-10-34-23.html» */
+function dateFromUrl(url) {
+  const m = decodeURIComponent(url).match(/(\d{4})-(\d{2})-(\d{2})(?:-\d{2}){0,3}\.html?$/i);
+  if (!m) return null;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return Number.isNaN(d.valueOf()) ? null : d;
+}
+
+/**
+ * Дата публикации. Искать по всей странице нельзя: в меню донора висят ссылки
+ * вида /index.php/2011-11-23-09-41-05.html, и статья 2018 года получала от них
+ * дату 2011 года. Поэтому источники — только контейнер статьи и её адрес.
+ *
+ * Псевдоним в адресе идёт раньше даты из текста: Joomla собирает его из даты
+ * создания записи, тогда как в тексте обычно стоит дата события, а не публикации.
+ */
+function parseDate(container, url) {
+  const iso = extract(container, [/<time[^>]*datetime="([^"]+)"/i]);
   if (iso) {
     const d = new Date(iso);
     if (!Number.isNaN(d.valueOf())) return d;
   }
 
-  // 2) Joomla «Опубликовано: 12 марта 2018»
-  const ru = html.match(/(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
+  const fromAlias = url ? dateFromUrl(url) : null;
+  if (fromAlias) return fromAlias;
+
+  const text = htmlToText(container);
+
+  const ru = text.match(/(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
   if (ru && RU_MONTHS[ru[2].toLowerCase()]) {
     return new Date(Date.UTC(Number(ru[3]), RU_MONTHS[ru[2].toLowerCase()] - 1, Number(ru[1])));
   }
 
-  // 3) числовые форматы 12.03.2018 и 2018-03-12
-  const dotted = html.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  const dotted = text.match(/(\d{2})\.(\d{2})\.(\d{4})/);
   if (dotted) {
     return new Date(Date.UTC(Number(dotted[3]), Number(dotted[2]) - 1, Number(dotted[1])));
   }
-  const dashed = html.match(/(\d{4})-(\d{2})-(\d{2})/);
+
+  const dashed = text.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (dashed) {
     return new Date(Date.UTC(Number(dashed[1]), Number(dashed[2]) - 1, Number(dashed[3])));
   }
+
   return null;
 }
 
 /**
- * Контейнер статьи Joomla, иначе — всё тело страницы.
- * Из него берутся и текст, и изображения: если сканировать всю страницу,
- * в галерею попадёт обвязка шаблона, а обложкой статьи станет логотип сайта.
+ * Хвост шаблона Joomla, попадающий внутрь контейнера статьи:
+ * навигация «< Предыдущая / Следующая >» и футерная линкоферма.
+ * Ленивый поиск закрывающего </div> до них дотягивается, поэтому режем по метке.
  */
+function trimTrailingChrome(containerHtml) {
+  const markers = [
+    /<table[^>]*class="[^"]*pagenav[^"]*"/i,
+    /<div[^>]*class="[^"]*headerbody[^"]*"/i,
+    /<[a-z]+[^>]*class="[^"]*pagination[^"]*"/i,
+  ];
+
+  let cut = containerHtml.length;
+  for (const re of markers) {
+    const m = containerHtml.match(re);
+    if (m?.index !== undefined && m.index < cut) cut = m.index;
+  }
+  return containerHtml.slice(0, cut);
+}
+
 function parseContainer(html) {
-  return (
+  return trimTrailingChrome(
     extract(html, [
       /<div[^>]*itemprop="articleBody"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<div[^>]*class="[^"]*item-page[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<div[^>]*class="[^"]*article-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<body[^>]*>([\s\S]*?)<\/body>/i,
-    ]) ?? html
+    ]) ?? html,
   );
 }
 
@@ -392,7 +431,7 @@ async function migratePage(url, index, total) {
 
   const container = parseContainer(html);
   const title = parseTitle(html) || slugBase;
-  const date = parseDate(html);
+  const date = parseDate(container, url);
   // Заголовок и дата печатаются сразу: если шаблон донора не распознан,
   // это видно на первой же статье, а не после полного обхода
   console.log(`      заголовок: ${title}`);
