@@ -136,26 +136,43 @@ function htmlToText(html) {
     .trim();
 }
 
+/**
+ * Первое совпадение из списка шаблонов.
+ * Элемент списка — регулярка либо пара [регулярка, номер группы]: у шаблонов
+ * с обратной ссылкой на имя тега содержимое лежит во второй группе, а не в первой.
+ */
 function extract(html, patterns) {
-  for (const re of patterns) {
+  for (const entry of patterns) {
+    const [re, group] = Array.isArray(entry) ? entry : [entry, 1];
     const m = html.match(re);
-    if (m?.[1]) return m[1];
+    if (m?.[group]) return m[group];
   }
   return null;
 }
 
-/** Joomla-шаблон донора: заголовок в .contentheading / h1 / h2.item-title */
+/**
+ * Заголовок статьи. Донор — Joomla примерно 2011 года, где заголовок носит
+ * класс contentheading, но тег вокруг него зависит от шаблона: в табличной
+ * вёрстке это <td>, в более поздних — <div>, <h1> или <a>. Поэтому после
+ * точных селекторов идёт обобщённый по самому классу, и только потом —
+ * <title>, который у донора содержит одно название сайта.
+ */
 function parseTitle(html) {
   const raw =
     extract(html, [
       /<h1[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/h1>/i,
       /<h2[^>]*class="[^"]*item-?title[^"]*"[^>]*>([\s\S]*?)<\/h2>/i,
       /<div[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+      [/<([a-z]+)[^>]*class="[^"]*contentheading[^"]*"[^>]*>([\s\S]*?)<\/\1>/i, 2],
+      [/<([a-z]+)[^>]*class="[^"]*(?:item-?title|article-?title|page-?title)[^"]*"[^>]*>([\s\S]*?)<\/\1>/i, 2],
       /<h1[^>]*>([\s\S]*?)<\/h1>/i,
       /<h2[^>]*>([\s\S]*?)<\/h2>/i,
       /<title[^>]*>([\s\S]*?)<\/title>/i,
     ]) ?? '';
-  return htmlToText(raw).split('\n')[0].trim();
+
+  const text = htmlToText(raw).split('\n')[0].trim();
+  // «Заголовок — Пивзавод74» → «Заголовок»: хвост с названием сайта не нужен
+  return text.replace(/\s*[|—–-]\s*Пивзавод\S*\s*$/i, '').trim();
 }
 
 function parseDate(html) {
@@ -257,6 +274,62 @@ async function fetchWithTimeout(url, { binary = false } = {}) {
 }
 
 /**
+ * Занятые имена записей. Если шаблон донора отдаёт один и тот же заголовок
+ * (например, название сайта из <title>), без этой защиты каждая следующая
+ * статья затирала бы предыдущую и от архива осталась бы одна запись.
+ */
+const usedSlugs = new Set();
+
+/** Имя записи: осмысленный заголовок, иначе адрес на доноре; всегда уникальное */
+function uniqueSlug(fromTitle, fromUrl) {
+  for (const candidate of [fromTitle, fromUrl]) {
+    if (candidate && !usedSlugs.has(candidate)) {
+      usedSlugs.add(candidate);
+      return candidate;
+    }
+  }
+  let n = 2;
+  while (usedSlugs.has(`${fromUrl}-${n}`)) n += 1;
+  usedSlugs.add(`${fromUrl}-${n}`);
+  return `${fromUrl}-${n}`;
+}
+
+/**
+ * Имена уже занятых файлов изображений: имя → исходный адрес.
+ * На доноре в разных папках встречаются одноимённые картинки (1.jpg и т.п.) —
+ * без проверки одна молча подменила бы другую.
+ */
+const imageNameOwner = new Map();
+
+/** Имя файла из адреса: декодированное и безопасное для пути и URL */
+function imageFileName(imageUrl) {
+  let base = path.basename(new URL(imageUrl).pathname);
+  try {
+    // На доноре встречается «1_%202.jpg»: без декодирования браузер запросит
+    // «1_ 2.jpg» и получит 404
+    base = decodeURIComponent(base);
+  } catch {
+    /* невалидная escape-последовательность — оставляем как есть */
+  }
+
+  let name =
+    base
+      .replace(/\s+/g, '-')
+      .replace(/[%?#&"'`\\:<>|*]/g, '') || `img-${Date.now()}`;
+
+  const owner = imageNameOwner.get(name);
+  if (owner && owner !== imageUrl) {
+    const ext = path.extname(name);
+    const stem = name.slice(0, name.length - ext.length);
+    let n = 2;
+    while (imageNameOwner.has(`${stem}-${n}${ext}`)) n += 1;
+    name = `${stem}-${n}${ext}`;
+  }
+  imageNameOwner.set(name, imageUrl);
+  return name;
+}
+
+/**
  * Результаты уже опрошенных изображений. Шапка, логотип и кнопки шаблона
  * повторяются на всех 152 страницах: без кэша мы бы качали их сотни раз,
  * а битый хотлинк ловил бы 30-секундный таймаут на каждой странице.
@@ -268,7 +341,7 @@ async function downloadImage(imageUrl) {
     return { name: attemptedImages.get(imageUrl), fromNetwork: false, cached: true };
   }
 
-  const name = path.basename(new URL(imageUrl).pathname) || `img-${Date.now()}`;
+  const name = imageFileName(imageUrl);
   const dest = path.join(CONFIG.imagesDir, name);
 
   report.images.total += 1;
@@ -320,6 +393,10 @@ async function migratePage(url, index, total) {
   const container = parseContainer(html);
   const title = parseTitle(html) || slugBase;
   const date = parseDate(html);
+  // Заголовок и дата печатаются сразу: если шаблон донора не распознан,
+  // это видно на первой же статье, а не после полного обхода
+  console.log(`      заголовок: ${title}`);
+  console.log(`      дата: ${date ? date.toISOString().slice(0, 10) : 'не распознана'}`);
   const body = parseBody(container);
   // Только картинки из тела статьи — иначе обложкой станет логотип шаблона
   const images = parseImages(container, url);
@@ -341,7 +418,7 @@ async function migratePage(url, index, total) {
     if (fromNetwork) await sleep(CONFIG.crawlDelayMs);
   }
 
-  const slug = slugify(title) || slugBase;
+  const slug = uniqueSlug(slugify(title), slugBase);
   const frontmatter = [
     '---',
     `title: ${yamlString(title)}`,
