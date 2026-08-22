@@ -1,0 +1,140 @@
+name: Миграция контента с донора
+
+# Запускается вручную: вкладка Actions → «Миграция контента с донора» → Run workflow.
+# Раннер GitHub ходит в интернет без ограничений, поэтому обход pivzavod74.ru
+# выполняется здесь, а результат коммитится обратно в ту же ветку.
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Сколько страниц обойти (0 — все 152)'
+        required: true
+        default: '3'
+        type: string
+      dry_run:
+        description: 'Пробный прогон: показать разбор, ничего не записывать'
+        required: false
+        default: false
+        type: boolean
+      resume:
+        description: 'Продолжить прерванный обход, пропуская уже скачанные страницы'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+# Два обхода одновременно били бы по донору вдвое чаще, чем разрешает Crawl-delay
+concurrency:
+  group: migrate-donor
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    # Полный проход — 152 страницы по 5 секунд плюс столько же на каждую картинку
+    timeout-minutes: 180
+
+    steps:
+      - name: Забрать ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Поставить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Проверить, отвечает ли донор
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 https://pivzavod74.ru/ || echo 000)
+          echo "Донор ответил: $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Донор недоступен с раннера GitHub (код ответа $code). Обход не запускался."
+            exit 1
+          fi
+
+      - name: Обойти донора
+        env:
+          LIMIT: ${{ inputs.limit }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          RESUME: ${{ inputs.resume }}
+        run: |
+          # Аргументы собираем через if, а не через &&: шаг идёт под `bash -e`,
+          # и ложное условие в цепочке уронило бы весь шаг.
+          ARGS=""
+          if [ "$LIMIT" != "0" ]; then ARGS="$ARGS --limit $LIMIT"; fi
+          if [ "$DRY_RUN" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "$RESUME" = "true" ]; then ARGS="$ARGS --resume"; fi
+
+          echo "Команда: node scripts/migrate-donor.mjs $ARGS"
+          node scripts/migrate-donor.mjs $ARGS 2>&1 | tee migration.log
+
+      - name: Собрать сводку
+        if: always()
+        run: |
+          {
+            echo '## Итог миграции'
+            echo
+            echo '```'
+            tail -n 12 migration.log 2>/dev/null || echo 'лог не создан'
+            echo '```'
+            echo
+            echo "- записей блога в репозитории: $(find src/content/blog -name '*.md' 2>/dev/null | wc -l)"
+            echo "- изображений выгружено: $(find public/images/legacy -type f 2>/dev/null | wc -l)"
+            echo "- сырых страниц сохранено: $(find assets/legacy-content/raw -name '*.html' 2>/dev/null | wc -l)"
+            echo "- записей с нераспознанной датой (draft): $(grep -rl '^draft: true' src/content/blog 2>/dev/null | wc -l)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Закоммитить результат в ветку
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git add assets/legacy-content src/content/blog public/images/legacy
+
+          if git diff --staged --quiet; then
+            echo 'Новых файлов нет — коммитить нечего.'
+            exit 0
+          fi
+
+          pages=$(find assets/legacy-content/raw -name '*.html' 2>/dev/null | wc -l)
+          posts=$(find src/content/blog -name '*.md' 2>/dev/null | wc -l)
+          images=$(find public/images/legacy -type f 2>/dev/null | wc -l)
+
+          git commit -m "Миграция с донора: ${posts} записей, ${images} изображений, ${pages} страниц архива" \
+                     -m 'Автоматический прогон scripts/migrate-donor.mjs через GitHub Actions.'
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Проверить, что сайт собирается с новым контентом
+        # Не блокирует: если фронтматтер где-то не прошёл схему, результат уже
+        # закоммичен и его видно, а ошибка сборки попадёт в сводку.
+        continue-on-error: true
+        id: build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Дописать в сводку статус сборки
+        if: always()
+        run: |
+          if [ "${{ steps.build.outcome }}" = "success" ]; then
+            echo '- сборка сайта с новым контентом: **прошла**' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '- сборка сайта с новым контентом: **упала** — смотрите лог шага сборки' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Приложить лог и отчёт
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-report
+          path: |
+            migration.log
+            assets/legacy-content/migration-report.json
+          if-no-files-found: warn
+          retention-days: 30
