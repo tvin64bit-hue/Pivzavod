@@ -184,15 +184,23 @@ function parseDate(html) {
   return null;
 }
 
-/** Основной текст: сначала контейнер статьи Joomla, иначе — всё тело */
-function parseBody(html) {
-  const container =
+/**
+ * Контейнер статьи Joomla, иначе — всё тело страницы.
+ * Из него берутся и текст, и изображения: если сканировать всю страницу,
+ * в галерею попадёт обвязка шаблона, а обложкой статьи станет логотип сайта.
+ */
+function parseContainer(html) {
+  return (
     extract(html, [
       /<div[^>]*itemprop="articleBody"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<div[^>]*class="[^"]*item-page[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<div[^>]*class="[^"]*article-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
       /<body[^>]*>([\s\S]*?)<\/body>/i,
-    ]) ?? html;
+    ]) ?? html
+  );
+}
+
+function parseBody(container) {
   return htmlToText(container);
 }
 
@@ -248,27 +256,43 @@ async function fetchWithTimeout(url, { binary = false } = {}) {
   }
 }
 
+/**
+ * Результаты уже опрошенных изображений. Шапка, логотип и кнопки шаблона
+ * повторяются на всех 152 страницах: без кэша мы бы качали их сотни раз,
+ * а битый хотлинк ловил бы 30-секундный таймаут на каждой странице.
+ */
+const attemptedImages = new Map();
+
 async function downloadImage(imageUrl) {
+  if (attemptedImages.has(imageUrl)) {
+    return { name: attemptedImages.get(imageUrl), fromNetwork: false, cached: true };
+  }
+
   const name = path.basename(new URL(imageUrl).pathname) || `img-${Date.now()}`;
   const dest = path.join(CONFIG.imagesDir, name);
 
   report.images.total += 1;
+
+  // Файл с прошлого прогона (--resume) — сети не касаемся
   if (existsSync(dest)) {
     report.images.ok += 1;
-    return name;
+    attemptedImages.set(imageUrl, name);
+    return { name, fromNetwork: false, cached: false };
   }
 
   try {
     const buf = await fetchWithTimeout(imageUrl, { binary: true });
     if (!DRY_RUN) await fs.writeFile(dest, buf);
     report.images.ok += 1;
-    return name;
+    attemptedImages.set(imageUrl, name);
+    return { name, fromNetwork: true, cached: false };
   } catch (err) {
     // Часть картинок — хотлинки на давно мёртвые домены (старый vkontakte.ru
     // и т.п.). Логируем и идём дальше, миграцию не прерываем.
     report.images.skipped += 1;
     report.failures.push({ kind: 'image', url: imageUrl, error: String(err.message ?? err) });
-    return null;
+    attemptedImages.set(imageUrl, null);
+    return { name: null, fromNetwork: true, cached: false };
   }
 }
 
@@ -293,20 +317,28 @@ async function migratePage(url, index, total) {
     if (!DRY_RUN) await fs.writeFile(rawFile, html, 'utf8');
   }
 
+  const container = parseContainer(html);
   const title = parseTitle(html) || slugBase;
   const date = parseDate(html);
-  const body = parseBody(html);
-  const images = parseImages(html, url);
+  const body = parseBody(container);
+  // Только картинки из тела статьи — иначе обложкой станет логотип шаблона
+  const images = parseImages(container, url);
 
   if (!date) {
     report.failures.push({ kind: 'date', url, error: 'дата публикации не распознана' });
   }
 
   const localImages = [];
-  for (const img of images) {
-    const name = await downloadImage(img);
+  for (const [n, img] of images.entries()) {
+    const { name, fromNetwork, cached } = await downloadImage(img);
     if (name) localImages.push(name);
-    await sleep(CONFIG.crawlDelayMs);
+
+    const mark = name ? name : 'пропущено (недоступно)';
+    const note = cached ? ' — уже опрошено' : fromNetwork ? '' : ' — уже на диске';
+    console.log(`      картинка ${n + 1}/${images.length}: ${mark}${note}`);
+
+    // Crawl-delay относится к запросам, а не к чтению с диска
+    if (fromNetwork) await sleep(CONFIG.crawlDelayMs);
   }
 
   const slug = slugify(title) || slugBase;
@@ -340,22 +372,32 @@ async function main() {
     await fs.mkdir(dir, { recursive: true });
   }
 
-  const list = (await fs.readFile(CONFIG.urlList, 'utf8'))
+  const all = (await fs.readFile(CONFIG.urlList, 'utf8'))
     .split('\n')
     .map((l) => l.trim())
-    // В sitemap донора попала строка-мусор со сломанной схемой — отсеиваем
-    .filter((l) => l.startsWith('http') && l.includes('pivzavod74.ru'))
-    // Корень сайта переносить нечего — там витрина, а не статья
-    .filter((l) => l !== `${CONFIG.origin}/` && l !== CONFIG.origin);
+    .filter((l) => l.startsWith('http') && l.includes('pivzavod74.ru'));
+
+  // Статьи на доноре оканчиваются на .html. Остальные девять адресов —
+  // корень и страницы-листинги разделов («Новости/», «Дегустация/» и т.п.):
+  // это витрины с анонсами и десятками миниатюр, а не материалы. Переносить
+  // их как записи блога незачем — разделы на новом сайте свои.
+  const list = all.filter((l) => /\.html?$/i.test(l));
+  const skippedSections = all.length - list.length;
 
   const urls = LIMIT ? list.slice(0, LIMIT) : list;
   report.pages.total = urls.length;
 
   console.log(
-    `Миграция: ${urls.length} страниц, задержка ${CONFIG.crawlDelayMs / 1000}s между запросами` +
+    `Миграция: ${urls.length} статей, задержка ${CONFIG.crawlDelayMs / 1000}s между запросами` +
       `${DRY_RUN ? ' (dry-run, файлы не пишутся)' : ''}`,
   );
-  console.log(`Ожидаемое время: не менее ${Math.ceil((urls.length * CONFIG.crawlDelayMs) / 60000)} мин\n`);
+  if (skippedSections) {
+    console.log(`Пропущено страниц-листингов разделов: ${skippedSections}`);
+  }
+  console.log(
+    `Ожидаемое время: от ${Math.ceil((urls.length * CONFIG.crawlDelayMs) / 60000)} мин, ` +
+      'плюс по 5 с на каждое новое изображение\n',
+  );
 
   for (const [i, url] of urls.entries()) {
     try {

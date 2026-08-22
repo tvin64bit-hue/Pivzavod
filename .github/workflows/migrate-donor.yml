@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: 'Сколько страниц обойти (0 — все 152)'
+        description: 'Сколько статей обойти (0 — все 144)'
         required: true
         default: '3'
         type: string
@@ -34,7 +34,8 @@ concurrency:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    # Полный проход — 152 страницы по 5 секунд плюс столько же на каждую картинку
+    # Полный проход — 144 статьи по 5 секунд плюс столько же на каждое
+    # новое изображение. Повторные и битые картинки кэшируются и сети не касаются.
     timeout-minutes: 180
 
     steps:
@@ -71,7 +72,9 @@ jobs:
           if [ "$RESUME" = "true" ]; then ARGS="$ARGS --resume"; fi
 
           echo "Команда: node scripts/migrate-donor.mjs $ARGS"
-          node scripts/migrate-donor.mjs $ARGS 2>&1 | tee migration.log
+          # stdbuf -oL: без него tee копит вывод блоками по 4 КБ, прогресс не
+          # виден в логе Actions и шаг выглядит зависшим, хотя обход идёт.
+          node scripts/migrate-donor.mjs $ARGS 2>&1 | stdbuf -oL tee migration.log
 
       - name: Собрать сводку
         if: always()
