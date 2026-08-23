@@ -327,6 +327,39 @@ async function fetchWithTimeout(url, { binary = false } = {}) {
 }
 
 /**
+ * Уже лежащие в репозитории записи: адрес на доноре → имя файла.
+ * Часть записей заведена вручную по текстам ТЗ и ссылается на те же статьи.
+ * Без этой карты миграция создала бы рядом второй файл с другим именем,
+ * и в ленте появились бы дубли.
+ */
+const existingByLegacyUrl = new Map();
+
+async function indexExistingPosts() {
+  let files;
+  try {
+    files = await fs.readdir(CONFIG.postsDir);
+  } catch {
+    return;
+  }
+
+  for (const file of files) {
+    if (!file.endsWith('.md')) continue;
+    const text = await fs.readFile(path.join(CONFIG.postsDir, file), 'utf8');
+    const m = text.match(/^legacyUrl:\s*(\S+)\s*$/m);
+    if (m) existingByLegacyUrl.set(m[1], file);
+  }
+}
+
+/** Убрать прежнюю запись про ту же статью, если она называлась иначе */
+async function dropSupersededPost(url, slug) {
+  const previous = existingByLegacyUrl.get(url);
+  if (!previous || previous === `${slug}.md`) return;
+
+  if (!DRY_RUN) await fs.rm(path.join(CONFIG.postsDir, previous), { force: true });
+  console.log(`      заменяет прежнюю запись: ${previous}`);
+}
+
+/**
  * Занятые имена записей. Если шаблон донора отдаёт один и тот же заголовок
  * (например, название сайта из <title>), без этой защиты каждая следующая
  * статья затирала бы предыдущую и от архива осталась бы одна запись.
@@ -512,6 +545,8 @@ async function migratePage(url, index, total) {
     .filter((line) => line !== null)
     .join('\n');
 
+  await dropSupersededPost(url, slug);
+
   if (!DRY_RUN) {
     await fs.writeFile(path.join(CONFIG.postsDir, `${slug}.md`), frontmatter, 'utf8');
   }
@@ -523,6 +558,8 @@ async function main() {
   for (const dir of [CONFIG.rawDir, CONFIG.imagesDir, CONFIG.postsDir]) {
     await fs.mkdir(dir, { recursive: true });
   }
+
+  await indexExistingPosts();
 
   const all = (await fs.readFile(CONFIG.urlList, 'utf8'))
     .split('\n')
