@@ -5,6 +5,9 @@ dist/
 .env
 .env.*
 !.env.example
+# Локальные секреты для `wrangler pages dev` — там лежит токен бота
+.dev.vars
+.dev.vars.*
 .DS_Store
 npm-debug.log*
 # Сырой HTML с донора намеренно хранится в репозитории: он позволяет

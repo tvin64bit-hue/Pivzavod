@@ -10,7 +10,9 @@
     "preview": "astro preview",
     "check": "astro check",
     "migrate": "node scripts/migrate-donor.mjs",
-    "check:functions": "tsc -p functions/tsconfig.json"
+    "check:functions": "tsc -p functions/tsconfig.json",
+    "preview:cf": "wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
@@ -18,8 +20,12 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@cloudflare/workers-types": "^4.20250109.0",
+    "@cloudflare/workers-types": "^5.20260823.1",
     "sharp": "^0.34.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.125.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -130,27 +130,72 @@ GitHub: вкладка **Actions** → «Миграция контента с д
 
 ## Деплой: Cloudflare Pages
 
-1. Подключите репозиторий в Cloudflare Pages.
-2. Настройки сборки:
+Репозиторий готов к развёртыванию: настройки сборки лежат в `wrangler.toml`,
+версия Node — в `.nvmrc`, обработчик формы — в `functions/`. Всё проверено
+локально на настоящем рантайме Workers через `wrangler pages dev`.
+
+### Подключение через панель
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** →
+   **Create** → вкладка **Pages** → **Connect to Git**.
+2. Авторизуйте GitHub, выберите репозиторий `tvin64bit-hue/Pivzavod`.
+3. Ветка для продакшена — та, которую разворачиваете (`main` после мержа PR).
+4. Настройки сборки:
+   - Framework preset: **Astro**
    - Build command: `npm run build`
    - Build output directory: `dist`
-   - Node version: 20 или новее
-3. Переменные окружения (Settings → Variables and Secrets):
-   - `TELEGRAM_BOT_TOKEN` — **как Secret**
-   - `TELEGRAM_CHAT_ID`
-   - `ALLOWED_ORIGIN` — необязательно, например `https://pivzavod74.ru`
-   - `SITE_URL` — необязательно, если домен отличается от `pivzavod74.ru`
+5. **Save and Deploy**. Первая сборка занимает 2–3 минуты.
 
-Обработчик формы (`functions/api/lead.ts`) разворачивается автоматически:
-Pages подхватывает каталог `functions/` без отдельной настройки.
+### Переменные окружения
 
-Локальная проверка функции:
+Settings → **Variables and Secrets**. Без них форма заявки честно отвечает
+об ошибке и просит позвонить — она не делает вид, что заявка ушла.
+
+| Имя | Тип | Значение |
+|---|---|---|
+| `TELEGRAM_BOT_TOKEN` | **Secret** | токен от @BotFather |
+| `TELEGRAM_CHAT_ID` | Variable | id чата для уведомлений |
+| `ALLOWED_ORIGIN` | Variable, необязательно | `https://<ваш-домен>` — отсекает запросы с чужих сайтов |
+| `SITE_URL` | Variable, необязательно | канонический домен, если он не `pivzavod74.ru` |
+
+Токен задавайте именно как **Secret**: обычные переменные видны в панели
+в открытом виде и попадают в логи сборки.
+
+После добавления переменных нужен повторный деплой — Deployments →
+**Retry deployment**, иначе функция их не увидит.
+
+### Свой домен
+
+Custom domains → Set up a domain → `pivzavod74.ru`. Если домен уже в
+Cloudflare, DNS пропишется сам; иначе смените NS у регистратора на выданные
+Cloudflare. После привязки задайте `SITE_URL`, чтобы канонические ссылки
+и `sitemap.xml` указывали на рабочий домен.
+
+### Локальная проверка перед деплоем
 
 ```bash
 cp .env.example .dev.vars   # заполните токен и chat_id
 npm run build
-npx wrangler pages dev dist
+npm run preview:cf          # wrangler pages dev dist
 ```
+
+Поднимется тот же рантайм Workers, что и в продакшене: заработают функция
+`/api/lead`, редиректы из `_redirects` и заголовки из `_headers`.
+Файл `.dev.vars` в git не попадает.
+
+Развернуть из командной строки, минуя панель: `npm run deploy`
+(потребует `npx wrangler login`).
+
+### Что проверено на wrangler pages dev
+
+- Все 14 редиректов со старых адресов Joomla ведут в нужные разделы.
+- Кириллица в `_redirects` записана процентным кодированием: Cloudflare
+  кодирует пути правил при разборе файла, и строка с сырой кириллицей
+  не совпала бы ни с чем.
+- Заголовки безопасности и годовой кэш хэшированных ассетов отдаются.
+- Форма отбивает пустые заявки и кривые телефоны кодом 400, ловит ботов
+  в honeypot, а при недоступном Telegram возвращает 502.
+- На методы, кроме POST, маршрут `/api/lead` отвечает 404.
 
 ### Как получить chat_id
 

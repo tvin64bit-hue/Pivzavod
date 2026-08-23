@@ -1,25 +1,33 @@
 # Редиректы со старых URL сайта-донора (Joomla) на новую структуру.
-# Формат Cloudflare Pages: <откуда> <куда> <код>
+# Формат Cloudflare Pages: <откуда> <куда> <код>. Первое совпадение выигрывает.
+#
+# Кириллица записана процентным кодированием намеренно. Проверено на
+# wrangler pages dev: Cloudflare кодирует пути правил при разборе файла,
+# поэтому строка с сырой кириллицей не совпадает ни с чем и была бы мёртвой.
+# Браузеры и поисковики кодируют не-ASCII в адресах, так что живой трафик
+# сюда попадает. Редкий клиент, шлющий сырые байты, уходит по общему
+# правилу в конце — на /blog.
+#
 # Точечные редиректы записей блога дописывает scripts/migrate-donor.mjs.
 
 # --- Разделы ---
-/index.php/Новости/* /blog 301
-/index.php/Награждения/* /o-kompanii/nagrady 301
-/index.php/Случайные-новости/* /blog 301
-/index.php/Гости/* /blog?kategoriya=raznoe 301
-/index.php/Оборудование/* /o-kompanii/pivovarnya 301
-/index.php/Дегустационный-зал-пива/* /opyt/degustacionny-zal 301
-/index.php/О-нас-пишут/* /blog?kategoriya=pressa 301
-/index.php/Учёба/* /blog?kategoriya=komandirovki 301
-/index.php/Вопросы-к-власти/* /blog?kategoriya=otrasl 301
-/index.php/Плохие-новости/* /blog?kategoriya=otrasl 301
-/index.php/случайные-новости/* /blog 301
-/index.php/Дегустация/* /blog?kategoriya=degustacii 301
-/index.php/Пивной-клуб/* /blog 301
-/index.php/Акции/* /blog 301
-/index.php/Ванны-с-горячим-пивом/* /opyt/spa 301
-/index.php/Экскурсионная-программа/* /opyt 301
-/index.php/Союз-пивоваров/* /soyuz-pivovarov 301
+/index.php/%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # Новости
+/index.php/%D0%9D%D0%B0%D0%B3%D1%80%D0%B0%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F/* /o-kompanii/nagrady 301  # Награждения
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # Случайные-новости
+/index.php/%D0%93%D0%BE%D1%81%D1%82%D0%B8/* /blog?kategoriya=raznoe 301  # Гости
+/index.php/%D0%9E%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5/* /o-kompanii/pivovarnya 301  # Оборудование
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9-%D0%B7%D0%B0%D0%BB-%D0%BF%D0%B8%D0%B2%D0%B0/* /opyt/degustacionny-zal 301  # Дегустационный-зал-пива
+/index.php/%D0%9E-%D0%BD%D0%B0%D1%81-%D0%BF%D0%B8%D1%88%D1%83%D1%82/* /blog?kategoriya=pressa 301  # О-нас-пишут
+/index.php/%D0%A3%D1%87%D1%91%D0%B1%D0%B0/* /blog?kategoriya=komandirovki 301  # Учёба
+/index.php/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D0%BA-%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B8/* /blog?kategoriya=otrasl 301  # Вопросы-к-власти
+/index.php/%D0%9F%D0%BB%D0%BE%D1%85%D0%B8%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog?kategoriya=otrasl 301  # Плохие-новости
+/index.php/%D1%81%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # случайные-новости
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D1%8F/* /blog?kategoriya=degustacii 301  # Дегустация
+/index.php/%D0%9F%D0%B8%D0%B2%D0%BD%D0%BE%D0%B9-%D0%BA%D0%BB%D1%83%D0%B1/* /blog 301  # Пивной-клуб
+/index.php/%D0%90%D0%BA%D1%86%D0%B8%D0%B8/* /blog 301  # Акции
+/index.php/%D0%92%D0%B0%D0%BD%D0%BD%D1%8B-%D1%81-%D0%B3%D0%BE%D1%80%D1%8F%D1%87%D0%B8%D0%BC-%D0%BF%D0%B8%D0%B2%D0%BE%D0%BC/* /opyt/spa 301  # Ванны-с-горячим-пивом
+/index.php/%D0%AD%D0%BA%D1%81%D0%BA%D1%83%D1%80%D1%81%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0/* /opyt 301  # Экскурсионная-программа
+/index.php/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%BF%D0%B8%D0%B2%D0%BE%D0%B2%D0%B0%D1%80%D0%BE%D0%B2/* /soyuz-pivovarov 301  # Союз-пивоваров
 
 # --- Одиночные страницы донора ---
 /index.php/vakansiya.html /o-kompanii/vakansii 301
