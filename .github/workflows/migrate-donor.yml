@@ -43,6 +43,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          # Полная история нужна для rebase перед пушем: обход длится час,
+          # и ветка за это время может уйти вперёд
+          fetch-depth: 0
 
       - name: Поставить Node
         uses: actions/setup-node@v4
@@ -111,11 +114,34 @@ jobs:
 
           git commit -m "Миграция с донора: ${posts} записей, ${images} изображений, ${pages} страниц архива" \
                      -m 'Автоматический прогон scripts/migrate-donor.mjs через GitHub Actions.'
-          git push origin HEAD:${{ github.ref_name }}
+
+          # Обход занимает около часа, и за это время в ветку могли запушить.
+          # Простой push тогда отбивается как non-fast-forward, и вся работа
+          # пропадает вместе с контейнером. Поэтому переносим коммит на новую
+          # вершину и пробуем снова. Конфликтовать могут только файлы самой
+          # миграции, поэтому -X theirs: свежий результат обхода важнее.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:${{ github.ref_name }}; then
+              echo "Запушено с попытки ${attempt}."
+              exit 0
+            fi
+
+            echo "Пуш отклонён — подтягиваю ветку и повторяю."
+            git fetch origin ${{ github.ref_name }}
+            if ! git rebase -X theirs origin/${{ github.ref_name }}; then
+              git rebase --abort || true
+              echo "::error::Не удалось перенести коммит на вершину ветки. Результат обхода лежит в артефакте migration-output этого прогона."
+              exit 1
+            fi
+          done
+
+          echo "::error::Пуш не прошёл за три попытки. Результат обхода лежит в артефакте migration-output этого прогона."
+          exit 1
 
       - name: Проверить, что сайт собирается с новым контентом
-        # Не блокирует: если фронтматтер где-то не прошёл схему, результат уже
-        # закоммичен и его видно, а ошибка сборки попадёт в сводку.
+        # Не блокирует и выполняется даже после неудачного пуша: результат
+        # обхода всё равно лежит в артефакте, и полезно знать, собирается ли он.
+        if: always()
         continue-on-error: true
         id: build
         run: |
@@ -131,13 +157,17 @@ jobs:
             echo '- сборка сайта с новым контентом: **упала** — смотрите лог шага сборки' >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Приложить лог и отчёт
+      # Страховка: если пуш не прошёл, час обхода не должен пропасть вместе
+      # с контейнером — результат можно скачать и приложить к ветке вручную.
+      - name: Приложить результат обхода
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: migration-report
+          name: migration-output
           path: |
+            src/content/blog
+            public/images/legacy
+            assets/legacy-content
             migration.log
-            assets/legacy-content/migration-report.json
           if-no-files-found: warn
           retention-days: 30
