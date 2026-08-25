@@ -35,6 +35,37 @@ npm run preview:cf          # wrangler pages dev dist
 Тогда заработают и `/api/lead`, и редиректы из `_redirects`, и заголовки
 из `_headers`. Файл `.dev.vars` в git не попадает.
 
+### Windows и PowerShell
+
+Нужен Node 20 или новее — поставьте LTS с [nodejs.org](https://nodejs.org/),
+затем закройте и откройте PowerShell заново, чтобы обновился PATH.
+
+```powershell
+node -v      # должно быть v20 или выше
+git clone https://github.com/tvin64bit-hue/Pivzavod.git
+cd Pivzavod
+git checkout claude/website-creation-spec-b30y7d
+npm install
+npm run dev
+```
+
+Если `npm` падает с сообщением, что «выполнение сценариев отключено в этой
+системе», это политика PowerShell блокирует `npm.ps1`. Лечится один раз:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Либо, не меняя политику, вызывайте `npm.cmd` вместо `npm`:
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+Останавливается сервер по Ctrl+C. Порт по умолчанию 4321; занят —
+запустите `npm run dev -- --port 4322`.
+
 ## Что уже сделано
 
 | Раздел ТЗ | Статус |
