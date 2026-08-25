@@ -29,18 +29,28 @@ for (const award of awards) {
 >
   <!-- Hero -->
   <section class="hero grain">
+    <!-- Линейная графика в стиле лабораторного журнала: мерная шкала и контуры
+         посуды. Чисто декоративная, поэтому скрыта от скринридеров. -->
+    <svg class="hero__art" viewBox="0 0 420 720" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <!-- Мерный цилиндр -->
+        <path d="M120 120h84v420a42 42 0 0 1-42 42 42 42 0 0 1-42-42z" />
+        <path d="M112 120h100" />
+        <g class="hero__art-marks">
+          <path d="M120 200h26M120 240h18M120 280h26M120 320h18M120 360h26M120 400h18M120 440h26M120 480h18" />
+        </g>
+        <!-- Уровень жидкости -->
+        <path class="hero__art-level" d="M120 336c14 8 28 8 42 0s28-8 42 0" />
+        <!-- Колба поменьше -->
+        <path d="M268 250h40M276 250v54l-30 62a18 18 0 0 0 16 27h48a18 18 0 0 0 16-27l-30-62v-54" />
+        <path d="M254 372h68" opacity="0.5" />
+        <!-- Термометр -->
+        <path d="M64 300v168a20 20 0 1 0 24 0V300a12 12 0 0 0-24 0z" />
+        <path d="M76 340v120" opacity="0.5" />
+      </g>
+    </svg>
+
     <div class="container hero__inner">
-      <!-- Регалии сразу, до скролла: они же раскрыты карточками ниже -->
-      <ul class="hero__badges">
-        {awards.map((award) => (
-          <li>
-            <a href={`/blog/${award.post}`}>
-              <span class="hero__badge-title">{award.title}</span>
-              <span class="hero__badge-sub">{award.summary}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
 
       <div class="hero__main">
         <p class="label">{site.tagline}</p>
@@ -183,40 +193,34 @@ for (const award of awards) {
   }
   .hero__main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
-  .hero__badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-3);
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .hero__art {
+    position: absolute;
+    right: 6%;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 76%;
+    max-height: 640px;
+    width: auto;
+    color: var(--c-accent);
+    opacity: 0.16;
+    z-index: 1;
+    pointer-events: none;
   }
-  .hero__badges li { margin: 0; }
-  .hero__badges a {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: var(--s-3) var(--s-4);
-    border: 1px solid var(--c-border);
-    border-radius: var(--r-md);
-    background: rgba(43, 33, 27, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    text-decoration: none;
-    transition: border-color var(--t-fast), transform var(--t-fast);
+  .hero__art-marks { opacity: 0.7; }
+  .hero__art-level { stroke-width: 1.6; opacity: 0.9; }
+
+  /* Правая треть занята графикой — не даём тексту заезжать под неё */
+  .hero__main { max-width: 62%; }
+
+  @media (max-width: 1023px) {
+    .hero__art { right: -4%; opacity: 0.1; }
+    .hero__main { max-width: 78%; }
   }
-  .hero__badges a:hover { border-color: var(--c-accent); transform: translateY(-2px); }
-  .hero__badge-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--c-text);
+  @media (max-width: 767px) {
+    .hero__art { right: -18%; height: 54%; opacity: 0.08; }
+    .hero__main { max-width: 100%; }
   }
-  .hero__badge-sub {
-    font-family: var(--f-mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    color: var(--c-muted);
-  }
+
 
   /* Полоса фактов прижата к низу экрана — она же подсказывает, что ниже есть
      ещё содержимое */
@@ -262,9 +266,6 @@ for (const award of awards) {
     .hero { min-height: 80vh; }
     .hero__inner { gap: var(--s-8); padding-block: var(--s-12); }
     .hero__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4); }
-    .hero__badges { gap: var(--s-2); }
-    .hero__badges a { padding: var(--s-2) var(--s-3); }
-    .hero__badge-title { font-size: 13px; }
     .hero__fact dd { font-size: 22px; }
     .hero__sub { font-size: 17px; line-height: 27px; margin-bottom: var(--s-8); }
     .hero .btn-row .btn { width: 100%; }

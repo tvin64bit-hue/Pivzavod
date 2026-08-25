@@ -151,7 +151,7 @@ export const outlets = [
     hours: '10:00–22:00',
     phone: '217-55-01, доб. 2',
     phoneHref: 'tel:+73512175501',
-    photo: null,
+    photo: 'teorema.jpg',
   },
   {
     name: 'Магазин «Пивзавод»',

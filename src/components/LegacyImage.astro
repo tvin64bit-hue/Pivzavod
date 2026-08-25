@@ -1,6 +1,7 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
+import sharp from 'sharp';
 
 /**
  * Изображение с сайта-донора.
@@ -45,10 +46,39 @@ const {
 const publicPath = path.join(process.cwd(), 'public', 'images', 'legacy', src);
 const exists = fs.existsSync(publicPath);
 const url = `/images/legacy/${src}`;
+
+/**
+ * Автоматическая защита от чрезмерной обрезки.
+ *
+ * В архиве попадаются снимки, чьи пропорции далеки от рамки: панорама
+ * витрины 2.5:1 и вертикальные страницы буклета 5:7. При object-fit: cover
+ * от них остаётся неразличимый фрагмент. Если потеря больше порога, снимок
+ * показывается целиком. Явно заданный `fit` всегда важнее этой эвристики.
+ */
+const CROP_LIMIT = 0.35;
+
+const frameRatio = (() => {
+  const [a, b] = ratio.split('/').map((n) => Number(n.trim()));
+  return b ? a / b : 16 / 10;
+})();
+
+let effectiveFit = fit;
+if (exists && Astro.props.fit === undefined) {
+  try {
+    const { width, height } = await sharp(publicPath).metadata();
+    if (width && height) {
+      const imageRatio = width / height;
+      const kept = Math.min(frameRatio, imageRatio) / Math.max(frameRatio, imageRatio);
+      if (1 - kept > CROP_LIMIT) effectiveFit = 'contain';
+    }
+  } catch {
+    /* нечитаемый файл — остаёмся с заданным режимом */
+  }
+}
 ---
 
 <figure
-  class:list={['legacy', `legacy--${fit}`, zoomable && exists && 'legacy--zoomable', className]}
+  class:list={['legacy', `legacy--${effectiveFit}`, zoomable && exists && 'legacy--zoomable', className]}
   style={`--ratio:${ratio}`}
 >
   {exists ? (

@@ -34,7 +34,7 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
           <LegacyImage
             src={tastingMenuPhoto}
             alt="Меню дегустационного зала «Лаборатории живого пива»"
-            ratio="3 / 4"
+            ratio="1 / 1"
             fit="contain"
             zoomable
             loading="eager"
@@ -47,18 +47,21 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
   <section class="section section--tight">
     <div class="container">
       <div class="section-head">
-        <p class="label">Интерьер</p>
-        <h2>Как выглядит зал</h2>
+        <p class="label">Буклет зала</p>
+        <h2>Меню и режим работы</h2>
+        <p class="lead">
+          Страницы фирменного буклета: история зала, часы работы банкетного зала,
+          линейка сортов и кухня. Нажмите, чтобы прочитать.
+        </p>
       </div>
 
-      <!-- Bento на десктопе, горизонтальный скролл на мобильном (раздел 5) -->
-      <div class="bento">
+      <div class="booklet">
         {tastingGallery.map((photo, i) => (
-          <div class:list={['bento__item', i === 0 && 'bento__item--wide', i === 3 && 'bento__item--tall']}>
+          <div class="booklet__page">
             <LegacyImage
               src={photo}
-              alt={`Дегустационный зал, фото ${i + 1}`}
-              ratio="4 / 3"
+              alt={`Буклет дегустационного зала, страница ${i + 1}`}
+              ratio="700 / 985"
               zoomable
             />
           </div>
@@ -83,39 +86,21 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
 </BaseLayout>
 
 <style>
-  .menu-block {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: var(--s-16);
-    align-items: center;
-  }
-  .menu-block__text p { max-width: 52ch; margin-bottom: var(--s-8); }
-
-  .bento {
+  /* Страницы буклета одного размера (700×985), поэтому сетка ровная,
+     а точное соотношение сторон рамки убирает обрезку полностью */
+  .booklet {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-auto-rows: 200px;
     gap: var(--s-4);
   }
-  .bento__item { min-height: 0; }
-  .bento__item :global(figure) { height: 100%; }
-  .bento__item--wide { grid-column: span 2; grid-row: span 2; }
-  .bento__item--tall { grid-row: span 2; }
+  .booklet__page :global(figure) { background: var(--c-surface); }
 
   @media (max-width: 1023px) {
-    .menu-block { gap: var(--s-8); }
-    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 220px; }
-    .bento__item--wide, .bento__item--tall { grid-column: auto; grid-row: auto; }
+    .booklet { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-
   @media (max-width: 767px) {
-    .menu-block { grid-template-columns: minmax(0, 1fr); }
-    .menu-block__media { order: -1; max-width: 320px; }
-    .menu-block__text .btn { width: 100%; }
-
-    .bento {
+    .booklet {
       display: flex;
-      grid-template-columns: none;
       gap: var(--s-3);
       overflow-x: auto;
       scroll-snap-type: x mandatory;
@@ -125,10 +110,27 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
       padding-bottom: var(--s-3);
       scrollbar-width: none;
     }
-    .bento::-webkit-scrollbar { display: none; }
-    .bento__item {
-      flex: 0 0 78%;
-      scroll-snap-align: center;
-    }
+    .booklet::-webkit-scrollbar { display: none; }
+    .booklet__page { flex: 0 0 62%; scroll-snap-align: center; }
+  }
+
+  .menu-block {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .menu-block__text p { max-width: 52ch; margin-bottom: var(--s-8); }
+
+
+  @media (max-width: 1023px) {
+    .menu-block { gap: var(--s-8); }
+  }
+
+  @media (max-width: 767px) {
+    .menu-block { grid-template-columns: minmax(0, 1fr); }
+    .menu-block__media { order: -1; max-width: 320px; }
+    .menu-block__text .btn { width: 100%; }
+
   }
 </style>
