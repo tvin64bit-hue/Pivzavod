@@ -15,6 +15,13 @@ interface Props {
   /** Метка формы для сообщения в Telegram — помогает понять, откуда заявка */
   source?: string;
   id?: string;
+  /**
+   * Подпись и подсказка поля комментария. Заявки разные — на дегустацию,
+   * на опт, отклик на вакансию, — и общий вопрос «сколько вас будет»
+   * половине из них не подходит.
+   */
+  commentLabel?: string;
+  commentPlaceholder?: string;
 }
 
 const {
@@ -23,6 +30,8 @@ const {
   description = 'Заполните форму — мы свяжемся с вами в течение рабочего дня.',
   source = Astro.url.pathname,
   id = 'lead',
+  commentLabel = 'Комментарий',
+  commentPlaceholder = 'Что мы можем для вас сделать',
 } = Astro.props;
 
 const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
@@ -75,10 +84,10 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
     </div>
 
     <div class="lead__field lead__field--wide">
-      <label for={`${uid}-message`}>Комментарий</label>
+      <label for={`${uid}-message`}>{commentLabel}</label>
       <textarea
         id={`${uid}-message`} name="message" rows="4" maxlength="2000"
-        placeholder="Сколько вас будет, на какую дату, что именно интересует"></textarea>
+        placeholder={commentPlaceholder}></textarea>
     </div>
 
     <div class="lead__actions lead__field--wide">
