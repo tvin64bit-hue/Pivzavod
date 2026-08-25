@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import { outlets } from '../../data/content';
 
 const sections = [
   {
@@ -48,9 +50,66 @@ const sections = [
       </div>
     </div>
   </section>
+
+  <!-- Адреса сразу на разделе: тому, кто зашёл «где купить», нужны они, а не описания -->
+  <section class="section section--tight">
+    <div class="container">
+      <p class="label">Шесть точек в Челябинске</p>
+      <ul class="spots">
+        {outlets.map((o) => (
+          <li class="spot">
+            <a class="spot__link" href="/gde-kupit/tochki-prodazh">
+              <div class="spot__media">
+                <LegacyImage src={o.photo} alt={o.name} ratio="3 / 2" />
+              </div>
+              <span class="spot__name">{o.name}</span>
+              <span class="caption spot__addr">{o.address}</span>
+              <span class="mono spot__hours">{o.hours}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
+  .spots {
+    list-style: none;
+    margin: var(--s-6) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+  }
+  .spot { margin: 0; }
+  .spot__link {
+    display: grid;
+    gap: var(--s-1);
+    color: inherit;
+    text-decoration: none;
+  }
+  .spot__media {
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    margin-bottom: var(--s-3);
+    background: linear-gradient(135deg, #241A15, #3A2C22);
+    transition: border-color var(--t-fast);
+  }
+  .spot__link:hover .spot__media { border-color: var(--c-accent); }
+  .spot__name { font-weight: 600; }
+  .spot__link:hover .spot__name { color: var(--c-accent); }
+  .spot__addr { color: var(--c-muted); }
+  .spot__hours { font-size: 12px; color: var(--c-accent); }
+
+  @media (max-width: 1023px) {
+    .spots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .spots { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
+  }
+
   .card__title {
     font-family: var(--f-display);
     font-size: 24px;

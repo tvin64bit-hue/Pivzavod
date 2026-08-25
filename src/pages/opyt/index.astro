@@ -32,7 +32,27 @@ import LegacyImage from '../../components/LegacyImage.astro';
 
         <a class="card exp" href="/opyt/spa">
           <div class="card__media">
-            <div class="exp__stub" aria-hidden="true"></div>
+            <!-- Фотографий процедуры у нас пока нет, поэтому рисунок в стиле сайта -->
+            <div class="exp__stub" aria-hidden="true">
+              <svg viewBox="0 0 400 250" class="exp__art">
+                <g fill="none" stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                  <!-- Ванна -->
+                  <path d="M64 138h272v18a58 58 0 0 1-58 58H122a58 58 0 0 1-58-58z" />
+                  <path d="M96 214v14M304 214v14" />
+                  <!-- Смеситель -->
+                  <path d="M112 138v-38a24 24 0 0 1 24-24h26" />
+                  <path d="M162 62v28" stroke-width="3" />
+                  <!-- Пар -->
+                  <path d="M182 104c10-12-10-22 0-34M222 100c10-12-10-24 0-36M262 106c10-12-10-22 0-34"
+                        opacity="0.6" />
+                  <!-- Кружка на бортике -->
+                  <path d="M300 96h44v34a10 10 0 0 1-10 10h-24a10 10 0 0 1-10-10z" />
+                  <path d="M344 104h12a10 10 0 0 1 0 20h-12" />
+                  <path d="M300 110h44" opacity="0.6" />
+                </g>
+              </svg>
+            </div>
           </div>
           <p class="label">Уникальное предложение</p>
           <h2>Пивные SPA-процедуры</h2>
@@ -74,10 +94,14 @@ import LegacyImage from '../../components/LegacyImage.astro';
   }
   .exp__stub {
     height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--c-ochre);
     background:
       radial-gradient(70% 70% at 30% 25%, rgba(244, 169, 59, 0.22), transparent 65%),
       linear-gradient(135deg, #241A15, #3A2C22);
   }
+  .exp__art { width: 62%; max-width: 320px; height: auto; opacity: 0.85; }
 
   .pivnaya {
     display: grid;

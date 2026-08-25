@@ -23,6 +23,11 @@ const { constructorUrl, query, zoom = 17, title, height = 460 } = Astro.props;
 const src =
   constructorUrl ||
   `https://yandex.ru/map-widget/v1/?mode=search&text=${encodeURIComponent(query ?? '')}&z=${zoom}`;
+
+/** Виджет режут блокировщики рекламы, поэтому рядом даём обычную ссылку */
+const fallbackUrl = constructorUrl
+  ? src
+  : `https://yandex.ru/maps/?text=${encodeURIComponent(query ?? '')}`;
 ---
 
 <div class="map" style={`--map-h:${height}px`}>
@@ -35,6 +40,12 @@ const src =
     allowfullscreen
   ></iframe>
 </div>
+
+<p class="map__link caption">
+  <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+    Открыть в Яндекс.Картах ↗
+  </a>
+</p>
 
 <style>
   .map {
@@ -49,7 +60,12 @@ const src =
     width: 100%;
     height: var(--map-h);
     border: 0;
+    /* Если виджет не загрузился, на его месте остаётся фон в тон сайту,
+       а не белый прямоугольник */
+    background: var(--c-surface);
   }
+
+  .map__link { margin: var(--s-3) 0 0; }
   @media (max-width: 767px) {
     .map iframe { height: 340px; }
   }

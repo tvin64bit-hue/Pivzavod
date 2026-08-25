@@ -80,10 +80,14 @@ import { footerNav, contacts, copyright, site } from '../data/site';
     padding: 0;
   }
   .ftr__group li,
-  .ftr__social li { margin-bottom: var(--s-2); }
+  .ftr__social li { margin-bottom: 0; }
+  /* inline-block с вертикальными отступами: строка 14px даёт цель нажатия
+     26px по высоте вместо 16px — палец на телефоне не промахивается */
   .ftr__group a,
   .ftr__social a,
   .ftr__address a {
+    display: inline-block;
+    padding-block: 5px;
     color: var(--c-muted);
     font-size: 14px;
     text-decoration: none;
@@ -94,7 +98,7 @@ import { footerNav, contacts, copyright, site } from '../data/site';
   .ftr__social { margin-top: var(--s-6); }
 
   .ftr__address { font-style: normal; }
-  .ftr__address p { margin-bottom: var(--s-2); font-size: 14px; color: var(--c-muted); }
+  .ftr__address p { margin-bottom: var(--s-1); font-size: 14px; color: var(--c-muted); }
   .ftr__req { margin-top: var(--s-6); font-size: 12px; line-height: 20px; }
 
   .ftr__bottom {

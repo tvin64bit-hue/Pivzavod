@@ -37,44 +37,45 @@ const {
 const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
-<section class="lead" id={id}>
-  <div class="lead__head">
+<section class="leadform" id={id}>
+  <div class="leadform__head">
     <p class="label">Заявка</p>
     <h2>{title}</h2>
-    <p class="lead__desc caption">{description}</p>
+    <p class="leadform__desc caption">{description}</p>
   </div>
 
-  <form class="lead__form" data-lead-form novalidate>
+  <form class="leadform__form" data-lead-form novalidate>
     <input type="hidden" name="source" value={source} />
     <!-- Honeypot: скрытое поле, которое заполняют только боты -->
-    <div class="lead__hp" aria-hidden="true">
+    <div class="leadform__hp" aria-hidden="true">
       <label for={`${uid}-company`}>Не заполняйте это поле</label>
       <input type="text" id={`${uid}-company`} name="company" tabindex="-1" autocomplete="off" />
     </div>
 
-    <div class="lead__field">
+    <div class="leadform__field">
       <label for={`${uid}-name`}>Имя <span class="req" aria-hidden="true">*</span></label>
       <input
         type="text" id={`${uid}-name`} name="name" required
         autocomplete="name" maxlength="80" placeholder="Как к вам обращаться"
         aria-describedby={`${uid}-name-err`}
       />
-      <p class="lead__err" id={`${uid}-name-err`} data-err-for="name" hidden>Укажите имя</p>
+      <p class="leadform__err" id={`${uid}-name-err`} data-err-for="name" hidden>Укажите имя</p>
     </div>
 
-    <div class="lead__field">
+    <div class="leadform__field">
       <label for={`${uid}-phone`}>Телефон <span class="req" aria-hidden="true">*</span></label>
       <input
         type="tel" id={`${uid}-phone`} name="phone" required
         autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__"
         data-phone-mask aria-describedby={`${uid}-phone-err`}
       />
-      <p class="lead__err" id={`${uid}-phone-err`} data-err-for="phone" hidden>
+      <p class="leadform__err" id={`${uid}-phone-err`} data-err-for="phone" hidden>
         Укажите телефон в формате +7 (999) 123-45-67
       </p>
     </div>
 
-    <div class="lead__field">
+    <!-- Во всю ширину: «Экскурсия/дегустация» не влезает в половину строки -->
+    <div class="leadform__field leadform__field--wide">
       <label for={`${uid}-topic`}>Тема</label>
       <select id={`${uid}-topic`} name="topic">
         {leadTopics.map((t) => (
@@ -83,48 +84,51 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
       </select>
     </div>
 
-    <div class="lead__field lead__field--wide">
+    <div class="leadform__field leadform__field--wide">
       <label for={`${uid}-message`}>{commentLabel}</label>
       <textarea
         id={`${uid}-message`} name="message" rows="4" maxlength="2000"
         placeholder={commentPlaceholder}></textarea>
     </div>
 
-    <div class="lead__actions lead__field--wide">
+    <div class="leadform__actions leadform__field--wide">
       <button type="submit" class="btn btn--primary" data-submit>Отправить</button>
-      <p class="lead__consent caption">
+      <p class="leadform__consent caption">
         Нажимая «Отправить», вы соглашаетесь на обработку персональных данных.
       </p>
     </div>
 
-    <p class="lead__status lead__status--ok lead__field--wide" data-ok hidden role="status">
+    <p class="leadform__status leadform__status--ok leadform__field--wide" data-ok hidden role="status">
       Спасибо! Мы свяжемся с вами в течение рабочего дня.
     </p>
-    <p class="lead__status lead__status--fail lead__field--wide" data-fail hidden role="alert">
+    <p class="leadform__status leadform__status--fail leadform__field--wide" data-fail hidden role="alert">
       Не удалось отправить заявку. Позвоните нам, пожалуйста: <a href="tel:+79227503301">+7 (922) 750-33-01</a>.
     </p>
   </form>
 </section>
 
 <style>
-  .lead {
+  .leadform {
+    /* Форма читается лучше в колонке, а не во всю ширину экрана */
+    max-width: 820px;
+    margin-inline: auto;
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--r-md);
     padding: var(--s-12);
   }
-  .lead__head { margin-bottom: var(--s-8); }
-  .lead__head h2 { font-size: 28px; line-height: 36px; margin-bottom: var(--s-3); }
-  .lead__desc { max-width: 56ch; }
+  .leadform__head { margin-bottom: var(--s-8); }
+  .leadform__head h2 { font-size: 28px; line-height: 36px; margin-bottom: var(--s-3); }
+  .leadform__desc { max-width: 56ch; }
 
-  .lead__form {
+  .leadform__form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-6);
   }
-  .lead__field--wide { grid-column: 1 / -1; }
+  .leadform__field--wide { grid-column: 1 / -1; }
 
-  .lead__hp {
+  .leadform__hp {
     position: absolute;
     width: 1px; height: 1px;
     overflow: hidden;
@@ -132,8 +136,8 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
     white-space: nowrap;
   }
 
-  .lead__field { display: flex; flex-direction: column; gap: var(--s-2); }
-  .lead__field label {
+  .leadform__field { display: flex; flex-direction: column; gap: var(--s-2); }
+  .leadform__field label {
     font-family: var(--f-mono);
     font-size: 12px;
     text-transform: uppercase;
@@ -142,9 +146,9 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
   }
   .req { color: var(--c-accent); }
 
-  .lead input,
-  .lead select,
-  .lead textarea {
+  .leadform input,
+  .leadform select,
+  .leadform textarea {
     width: 100%;
     padding: 13px var(--s-4);
     background: var(--c-bg);
@@ -156,17 +160,17 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
     line-height: 24px;
     transition: border-color var(--t-fast);
   }
-  .lead textarea { resize: vertical; min-height: 108px; }
-  .lead input::placeholder,
-  .lead textarea::placeholder { color: rgba(201, 184, 164, 0.5); }
-  .lead input:hover,
-  .lead select:hover,
-  .lead textarea:hover { border-color: rgba(250, 243, 232, 0.25); }
-  .lead input:focus,
-  .lead select:focus,
-  .lead textarea:focus { border-color: var(--c-accent); }
+  .leadform textarea { resize: vertical; min-height: 108px; }
+  .leadform input::placeholder,
+  .leadform textarea::placeholder { color: rgba(201, 184, 164, 0.5); }
+  .leadform input:hover,
+  .leadform select:hover,
+  .leadform textarea:hover { border-color: rgba(250, 243, 232, 0.25); }
+  .leadform input:focus,
+  .leadform select:focus,
+  .leadform textarea:focus { border-color: var(--c-accent); }
 
-  .lead select {
+  .leadform select {
     appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, var(--c-muted) 50%),
                       linear-gradient(135deg, var(--c-muted) 50%, transparent 50%);
@@ -176,45 +180,45 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
     padding-right: var(--s-12);
   }
 
-  .lead [aria-invalid='true'] { border-color: var(--c-error); }
-  .lead__err {
+  .leadform [aria-invalid='true'] { border-color: var(--c-error); }
+  .leadform__err {
     margin: 0;
     font-size: 13px;
     line-height: 20px;
     color: var(--c-error);
   }
-  .lead__err[hidden] { display: none; }
+  .leadform__err[hidden] { display: none; }
 
-  .lead__actions {
+  .leadform__actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: var(--s-4) var(--s-6);
   }
-  .lead__consent { max-width: 44ch; margin: 0; }
+  .leadform__consent { max-width: 44ch; margin: 0; }
 
-  .lead__status {
+  .leadform__status {
     margin: 0;
     padding: var(--s-3) var(--s-4);
     border-radius: var(--r-sm);
     font-size: 15px;
   }
-  .lead__status[hidden] { display: none; }
-  .lead__status--ok {
+  .leadform__status[hidden] { display: none; }
+  .leadform__status--ok {
     color: var(--c-success);
     background: rgba(127, 166, 107, 0.12);
     border: 1px solid rgba(127, 166, 107, 0.4);
   }
-  .lead__status--fail {
+  .leadform__status--fail {
     color: var(--c-error);
     background: rgba(226, 96, 74, 0.12);
     border: 1px solid rgba(226, 96, 74, 0.4);
   }
 
   @media (max-width: 767px) {
-    .lead { padding: var(--s-8) var(--s-6); }
-    .lead__form { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
-    .lead__actions .btn { width: 100%; }
+    .leadform { padding: var(--s-8) var(--s-6); }
+    .leadform__form { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
+    .leadform__actions .btn { width: 100%; }
   }
 </style>
 

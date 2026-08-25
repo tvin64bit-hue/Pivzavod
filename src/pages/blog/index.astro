@@ -19,6 +19,9 @@ const filters = (Object.keys(CATEGORIES) as CategoryKey[])
   .filter((key) => counts[key])
   .map((key) => ({ key, label: CATEGORIES[key], count: counts[key] }));
 
+/** Сколько записей показываем сразу — остальные раскрываются кнопкой */
+const PAGE_SIZE = 24;
+
 const dateFmt = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
   month: 'long',
@@ -53,8 +56,8 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
       </div>
 
       <div class="feed" data-feed>
-        {posts.map((post) => (
-          <article class="post" data-category={post.data.category}>
+        {posts.map((post, i) => (
+          <article class="post" data-category={post.data.category} hidden={i >= PAGE_SIZE}>
             <a class="card post__card" href={`/blog/${post.id}`}>
               <div class="card__media">
                 {post.data.cover ? (
@@ -79,6 +82,21 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
       </div>
 
       <p class="feed__empty" data-empty hidden>В этой категории пока нет записей.</p>
+
+      {posts.length > PAGE_SIZE && (
+        <div class="feed__more">
+          <button type="button" class="btn btn--secondary" data-more>
+            Показать ещё {Math.min(PAGE_SIZE, posts.length - PAGE_SIZE)}
+          </button>
+        </div>
+      )}
+
+      <noscript>
+        <style>
+          .post[hidden] { display: block; }
+          .feed__more { display: none; }
+        </style>
+      </noscript>
 
     </div>
   </section>
@@ -151,6 +169,13 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
   }
   .feed__empty[hidden] { display: none; }
 
+  .feed__more {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--s-12);
+  }
+  .feed__more[hidden] { display: none; }
+
   .feed__note { margin-top: var(--s-12); }
   .feed__note code { font-family: var(--f-mono); font-size: 12px; color: var(--c-accent); }
 
@@ -164,18 +189,38 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
 </style>
 
 <script>
+  const PAGE_SIZE = 24;
+
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter]'));
   const posts = Array.from(document.querySelectorAll<HTMLElement>('[data-feed] > .post'));
   const empty = document.querySelector<HTMLElement>('[data-empty]');
+  const more = document.querySelector<HTMLButtonElement>('[data-more]');
+  const moreBox = more?.parentElement ?? null;
+
+  let currentKey = 'all';
+  let limit = PAGE_SIZE;
+
+  /** Показываем записи выбранной категории, но не больше текущего лимита */
+  const render = () => {
+    let matched = 0;
+    posts.forEach((post) => {
+      const match = currentKey === 'all' || post.dataset.category === currentKey;
+      post.hidden = !(match && matched < limit);
+      if (match) matched += 1;
+    });
+
+    if (empty) empty.hidden = matched > 0;
+    if (more && moreBox) {
+      const rest = matched - limit;
+      moreBox.hidden = rest <= 0;
+      more.textContent = `Показать ещё ${Math.min(rest, PAGE_SIZE)}`;
+    }
+  };
 
   const apply = (key: string) => {
-    let shown = 0;
-    posts.forEach((post) => {
-      const match = key === 'all' || post.dataset.category === key;
-      post.hidden = !match;
-      if (match) shown += 1;
-    });
-    if (empty) empty.hidden = shown > 0;
+    currentKey = key;
+    limit = PAGE_SIZE;
+    render();
 
     buttons.forEach((btn) => {
       const active = btn.dataset.filter === key;
@@ -194,6 +239,16 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
     btn.addEventListener('click', () => apply(btn.dataset.filter ?? 'all'));
   });
 
+  more?.addEventListener('click', () => {
+    // Первая из добавленных карточек принимает фокус — с клавиатуры не теряемся
+    const firstNew = posts.filter((p) => !p.hidden).length;
+    limit += PAGE_SIZE;
+    render();
+    const target = posts.filter((p) => !p.hidden)[firstNew];
+    target?.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
+  });
+
   const initial = new URL(window.location.href).searchParams.get('kategoriya');
   if (initial && buttons.some((b) => b.dataset.filter === initial)) apply(initial);
+  else render();
 </script>

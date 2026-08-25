@@ -114,6 +114,16 @@ a {
 }
 a:hover { color: var(--c-accent-hover); text-decoration-color: currentColor; }
 
+/* Телефон и почта — основные действия на мобильном, поэтому цель нажатия
+   доводим до рекомендованных 24px по высоте */
+@media (hover: none) {
+  a[href^='tel:'],
+  a[href^='mailto:'] {
+    display: inline-block;
+    padding-block: 4px;
+  }
+}
+
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 3px;
