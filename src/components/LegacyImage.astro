@@ -105,6 +105,10 @@ if (exists && Astro.props.fit === undefined) {
 
 <style>
   .legacy {
+    /* Обязательно: подпись .visually-hidden внутри кнопки — position: absolute.
+       Без своего контейнера она уезжает к body и растягивает страницу
+       по горизонтали (ломало вёрстку на телефоне в галерее-карусели) */
+    position: relative;
     margin: 0;
     aspect-ratio: var(--ratio);
     overflow: hidden;
