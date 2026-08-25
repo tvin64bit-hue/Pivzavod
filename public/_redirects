@@ -10,6 +10,19 @@
 #
 # Точечные редиректы записей блога дописывает scripts/migrate-donor.mjs.
 
+# --- Служебные страницы донора: их содержание живёт на страницах сайта ---
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9-%D0%B7%D0%B0%D0%BB-%D0%BF%D0%B8%D0%B2%D0%B0/pivnaya-na-karpinskogo.html /opyt/degustacionny-zal 301  # menyu-na-karpinskogo-d-62
+/index.php/%D0%9F%D0%B8%D0%B2%D0%BD%D0%BE%D0%B9-%D0%BA%D0%BB%D1%83%D0%B1/q-q.html /gde-kupit 301  # nashe-pivo-mozhno-poprobovat-tolko-zdes
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/tochky.html /gde-kupit/tochki-prodazh 301  # nashe-pivo-v-tochkah-roznicy
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/zip-technologies.html /gde-kupit/opt 301  # prays-optovikam
+/index.php/2.html /o-kompanii 301  # sodruzhestvo-pivovaren-laboratoriya-piva
+/index.php/2011-11-23-09-41-05.html /o-kompanii/rukovodstvo 301  # rukovoditeli-i-otvetstvennye-lica-druzhestvennyh-pivovaren
+/index.php/2011-11-23-18-28-06.html /kontakty 301  # nashi-rekvizity
+/index.php/2011-11-26-02-45-30.html /pivnoy-folklor 301  # pivo-i-zdorove
+/index.php/phone.html /kontakty 301  # mestoraspolozhenie-ooo-laboratoriya-zhivogo-piva
+/index.php/vakansiya.html /o-kompanii/vakansii 301  # vakansii
+/index.php/zip-technologies.html /gde-kupit/opt 301  # zip-technologies
+
 # --- Разделы ---
 /index.php/%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # Новости
 /index.php/%D0%9D%D0%B0%D0%B3%D1%80%D0%B0%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F/* /o-kompanii/nagrady 301  # Награждения

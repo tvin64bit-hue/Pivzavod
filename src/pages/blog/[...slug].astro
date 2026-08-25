@@ -50,7 +50,9 @@ const schema = {
             {CATEGORIES[post.data.category]}
           </a>
           <time class="mono entry__date" datetime={post.data.date.toISOString()}>
-            {dateFmt.format(post.data.date)}
+            {post.data.dateApproximate
+              ? `около ${post.data.date.getFullYear()} г.`
+              : dateFmt.format(post.data.date)}
           </time>
         </div>
         <h1>{post.data.title}</h1>
@@ -90,7 +92,9 @@ const schema = {
 
       {post.data.legacyUrl && (
         <p class="entry__origin caption mono">
-          Материал перенесён из архива сайта пивоварни (публикация {dateFmt.format(post.data.date)}).
+          {post.data.dateApproximate
+            ? `Материал перенесён из архива сайта пивоварни. Точная дата публикации не сохранилась — год восстановлен по порядку записей в архиве.`
+            : `Материал перенесён из архива сайта пивоварни (публикация ${dateFmt.format(post.data.date)}).`}
         </p>
       )}
     </div>
@@ -105,7 +109,9 @@ const schema = {
             {related.map((item) => (
               <a class="card related" href={`/blog/${item.id}`}>
                 <time class="mono related__date" datetime={item.data.date.toISOString()}>
-                  {dateFmt.format(item.data.date)}
+                  {item.data.dateApproximate
+                    ? `около ${item.data.date.getFullYear()} г.`
+                    : dateFmt.format(item.data.date)}
                 </time>
                 <h2 class="related__title">{item.data.title}</h2>
               </a>

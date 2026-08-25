@@ -72,7 +72,9 @@ const migrated = posts.length;
               <div class="post__meta">
                 <span class="tag">{CATEGORIES[post.data.category]}</span>
                 <time class="mono post__date" datetime={post.data.date.toISOString()}>
-                  {dateFmt.format(post.data.date)}
+                  {post.data.dateApproximate
+                    ? `около ${post.data.date.getFullYear()} г.`
+                    : dateFmt.format(post.data.date)}
                 </time>
               </div>
               <h2 class="post__title">{post.data.title}</h2>

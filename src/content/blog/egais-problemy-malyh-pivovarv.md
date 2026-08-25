@@ -1,7 +1,7 @@
 ---
 title: 'ЕГАИС - проблемы малых пивоварв'
 date: 2016-02-08
-category: raznoe
+category: otrasl
 excerpt: 'О результатах встречи с руководством Росалкогольрегулирования, которая состаялась 8 февраля 2016 г. в Москве, рассказывает Илья Ройтенберг.'
 cover: roy0.jpg
 legacyUrl: https://pivzavod74.ru/index.php/Случайные-новости/roy.html

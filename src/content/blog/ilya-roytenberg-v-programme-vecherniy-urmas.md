@@ -1,11 +1,11 @@
 ---
 title: 'Илья Ройтенберг в программе "Вечерний Урмас"'
-date: 2026-08-25
-category: raznoe
+date: 2015-11-04
+category: pressa
 excerpt: 'Илья Ройтенберг встретился с Максом Бодягиным в программе "Вечерний Урмас"'
 cover: roy00.jpg
 legacyUrl: https://pivzavod74.ru/index.php/Случайные-новости/urmas.html
-draft: true  # дата не распознана — проставьте вручную
+dateApproximate: true
 ---
 
 Илья Ройтенберг встретился с Максом Бодягиным в программе "Вечерний Урмас"

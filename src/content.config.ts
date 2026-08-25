@@ -35,6 +35,13 @@ const blog = defineCollection({
     youtube: z.string().optional(),
     /** Исходный URL на доноре — для редиректов и атрибуции */
     legacyUrl: z.string().optional(),
+    /**
+     * Дата публикации восстановлена приблизительно. У части архивных статей
+     * её нет ни в адресе, ни в тексте: вывод даты в шаблоне донора отключён.
+     * Такие записи датированы по их месту в sitemap донора, который идёт
+     * обратно-хронологически, поэтому надёжен только год — его и показываем.
+     */
+    dateApproximate: z.boolean().default(false),
     /** meta description, если отличается от excerpt */
     description: z.string().optional(),
     draft: z.boolean().default(false),
