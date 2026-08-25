@@ -14,15 +14,26 @@ interface Props {
   /** Дополнительный JSON-LD для страницы */
   schema?: Record<string, unknown>;
   noindex?: boolean;
+  /**
+   * Изображение, которое занимает первый экран. Фон подключён через CSS,
+   * поэтому браузер узнаёт о нём только после разбора стилей — предзагрузка
+   * убирает эту задержку с самого заметного элемента страницы.
+   */
+  preloadImage?: string;
 }
 
 const {
   title,
   description,
   bareTitle = false,
-  ogImage = '/og-default.svg',
+  /**
+   * Превью для соцсетей. Только растр: SVG в og:image не показывают
+   * ни Telegram, ни VK, ни WhatsApp — ссылка уходила бы без картинки.
+   */
+  ogImage = '/og-default.jpg',
   schema,
   noindex = false,
+  preloadImage,
 } = Astro.props;
 
 const fullTitle = bareTitle ? title : `${title} — ${site.name}`;
@@ -66,12 +77,19 @@ const orgSchema = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
 
     <meta name="theme-color" content="#1C1410" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {preloadImage && (
+      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
+    )}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

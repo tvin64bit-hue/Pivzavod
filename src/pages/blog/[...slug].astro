@@ -52,6 +52,7 @@ const schema = {
   title={post.data.title}
   description={post.data.description ?? post.data.excerpt}
   schema={schema}
+  ogImage={post.data.cover ? `/images/legacy/${post.data.cover}` : undefined}
 >
   <article class="entry">
     <header class="entry__head grain">
