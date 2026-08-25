@@ -1,0 +1,109 @@
+name: Докачать недостающие изображения
+
+# Основная миграция берёт картинки только из тела статей, поэтому снимки
+# со служебных страниц донора в выгрузку не попали. Этот прогон добирает
+# то, на что ссылается код сайта. Занимает пару минут.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Пробный прогон: показать, что нашлось, ничего не писать'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: migrate-donor
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Забрать ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Поставить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Проверить, отвечает ли донор
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 https://pivzavod74.ru/ || echo 000)
+          echo "Донор ответил: $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Донор недоступен с раннера GitHub (код $code)."
+            exit 1
+          fi
+
+      - name: Докачать изображения
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          ARGS=""
+          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          node scripts/fetch-missing-images.mjs $ARGS 2>&1 | stdbuf -oL tee fetch-images.log
+
+      - name: Собрать сводку
+        if: always()
+        run: |
+          {
+            echo '## Докачка изображений'
+            echo
+            echo '```'
+            tail -n 20 fetch-images.log 2>/dev/null || echo 'лог не создан'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Закоммитить результат
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/images/legacy
+
+          if git diff --staged --quiet; then
+            echo 'Новых изображений нет.'
+            exit 0
+          fi
+
+          count=$(git diff --staged --name-only | wc -l)
+          git commit -m "Докачать изображения со служебных страниц донора: ${count} шт." \
+                     -m 'Автоматический прогон scripts/fetch-missing-images.mjs.'
+
+          # Ветка могла уйти вперёд, пока шёл прогон
+          for attempt in 1 2 3; do
+            if git push origin HEAD:${{ github.ref_name }}; then
+              echo "Запушено с попытки ${attempt}."
+              exit 0
+            fi
+            git fetch origin ${{ github.ref_name }}
+            if ! git rebase -X theirs origin/${{ github.ref_name }}; then
+              git rebase --abort || true
+              echo "::error::Не удалось перенести коммит. Результат — в артефакте."
+              exit 1
+            fi
+          done
+          echo "::error::Пуш не прошёл за три попытки. Результат — в артефакте."
+          exit 1
+
+      - name: Приложить результат
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fetched-images
+          path: |
+            public/images/legacy
+            fetch-images.log
+          if-no-files-found: warn
+          retention-days: 30
