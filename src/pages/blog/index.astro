@@ -67,7 +67,7 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
                 <span class="tag">{CATEGORIES[post.data.category]}</span>
                 <time class="mono post__date" datetime={post.data.date.toISOString()}>
                   {post.data.dateApproximate
-                    ? `около ${post.data.date.getFullYear()} г.`
+                    ? `${post.data.date.getFullYear()} г.`
                     : dateFmt.format(post.data.date)}
                 </time>
               </div>

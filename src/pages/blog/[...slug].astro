@@ -13,6 +13,18 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 
+/**
+ * Снимки записи одним списком. У части архивных записей заполнена только
+ * обложка: скрипт миграции пишет gallery лишь когда снимков больше одного.
+ * Обложка сверху страницы не выводится, поэтому без этой склейки такие
+ * записи остались бы совсем без фотографий.
+ */
+const photos = post.data.gallery.length
+  ? post.data.gallery
+  : post.data.cover
+    ? [post.data.cover]
+    : [];
+
 const dateFmt = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
   month: 'long',
@@ -51,7 +63,7 @@ const schema = {
           </a>
           <time class="mono entry__date" datetime={post.data.date.toISOString()}>
             {post.data.dateApproximate
-              ? `около ${post.data.date.getFullYear()} г.`
+              ? `${post.data.date.getFullYear()} г.`
               : dateFmt.format(post.data.date)}
           </time>
         </div>
@@ -59,11 +71,6 @@ const schema = {
       </div>
     </header>
 
-    {post.data.cover && (
-      <div class="container entry__cover">
-        <LegacyImage src={post.data.cover} alt={post.data.title} ratio="21 / 9" loading="eager" />
-      </div>
-    )}
 
     <div class="container">
       <div class="entry__body prose">
@@ -82,21 +89,14 @@ const schema = {
         </div>
       )}
 
-      {post.data.gallery.length > 1 && (
+      {photos.length > 0 && (
         <div class="entry__gallery">
-          {post.data.gallery.map((photo, i) => (
+          {photos.map((photo, i) => (
             <LegacyImage src={photo} alt={`${post.data.title} — фото ${i + 1}`} ratio="4 / 3" />
           ))}
         </div>
       )}
 
-      {post.data.legacyUrl && (
-        <p class="entry__origin caption mono">
-          {post.data.dateApproximate
-            ? `Материал перенесён из архива сайта пивоварни. Точная дата публикации не сохранилась — год восстановлен по порядку записей в архиве.`
-            : `Материал перенесён из архива сайта пивоварни (публикация ${dateFmt.format(post.data.date)}).`}
-        </p>
-      )}
     </div>
 
     {related.length > 0 && (
@@ -110,7 +110,7 @@ const schema = {
               <a class="card related" href={`/blog/${item.id}`}>
                 <time class="mono related__date" datetime={item.data.date.toISOString()}>
                   {item.data.dateApproximate
-                    ? `около ${item.data.date.getFullYear()} г.`
+                    ? `${item.data.date.getFullYear()} г.`
                     : dateFmt.format(item.data.date)}
                 </time>
                 <h2 class="related__title">{item.data.title}</h2>
@@ -144,7 +144,6 @@ const schema = {
   .entry__date { font-size: 13px; color: var(--c-muted); }
   .entry__head h1 { max-width: 24ch; margin-bottom: 0; }
 
-  .entry__cover { margin-top: var(--s-12); }
 
   .entry__body {
     margin-top: var(--s-12);
@@ -173,17 +172,14 @@ const schema = {
 
   .entry__gallery {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Колонки подстраиваются под число снимков: одиночное фото не жмётся
+       в треть ширины, а занимает разумный размер */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: var(--s-4);
     margin-top: var(--s-12);
   }
+  .entry__gallery:has(> :only-child) { max-width: 640px; }
 
-  .entry__origin {
-    margin-top: var(--s-12);
-    padding-top: var(--s-6);
-    border-top: 1px solid var(--c-border);
-    font-size: 12px;
-  }
 
   .related__date {
     display: block;
