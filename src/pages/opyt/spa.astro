@@ -7,12 +7,12 @@ import { contacts } from '../../data/site';
 
 <BaseLayout
   title="Пивные SPA-процедуры"
-  description="Пивные SPA-процедуры «Лаборатории живого пива»: тёплая ванна с добавлением горячего пива. Запись по телефону или через форму заявки."
+  description="Пивные SPA-процедуры в Челябинске: две ванны с живым пивом, инфракрасная сауна и массаж. Процедура длится 1,5 часа. Запись по телефону или через форму."
 >
   <PageHeader
     label="Впечатления"
     title="Пивные SPA-процедуры"
-    lead="Уникальная процедура — тёплая ванна с добавлением горячего пива."
+    lead="Две ванны рядом, полтора часа и кружка живого пива в руке. Процедура для тех, кто уже всё попробовал на вкус."
     crumbs={[{ label: 'Впечатления', href: '/opyt' }, { label: 'Пивные SPA-процедуры' }]}
   />
 
@@ -22,42 +22,73 @@ import { contacts } from '../../data/site';
         <div class="prose">
           <p class="label">Что это</p>
           <p>
-            Уникальная процедура — тёплая ванна с добавлением горячего пива.
-            Подробности и запись — по телефону или через форму заявки.
-          </p>
-          <p>
-            <a href={contacts.officePhone.href} class="spa-phone mono">{contacts.officePhone.label}</a>
+            В клубе мини-пивоварни «Лаборатория пива» гости могут воспользоваться
+            новой необычной процедурой — поплескаться в ванне с пивом. Гостям
+            предлагаются две ванны, расположенные рядом друг с другом, где гости
+            могут лежать в пиве, синхронно наслаждаясь кружкой этого прекрасного
+            напитка.
           </p>
         </div>
 
-        <p class="placeholder-note spa-note">
-          <strong>Временный текст — заменить</strong>
-          Описание процедуры, длительность, цена и противопоказания на сайте-доноре
-          отсутствуют. Пункт «Описание SPA-процедуры — [ЗАПОЛНИТЬ]» из чек-листа
-          ассетов ТЗ: как только заказчик передаст данные, этот блок и заглушка
-          выше заменяются полноценным описанием.
-        </p>
+        <div class="spa-steps">
+          <p class="label">Как проходит</p>
+          <ol>
+            <li>Душ.</li>
+            <li>
+              Инфракрасная сауна — тело разогревается, организм пропотеет
+              и расслабится.
+            </li>
+            <li>Ещё раз душ.</li>
+            <li>И только после этого — сама пивная ванна.</li>
+            <li>
+              Массаж на отдельные части тела или общий расслабляющий —
+              рекомендуется для полного эффекта, выполняет опытный специалист.
+            </li>
+          </ol>
+        </div>
 
         <dl class="spa-specs">
           <div class="spa-spec">
             <dt>Длительность</dt>
-            <dd class="spa-spec--empty">уточняется</dd>
+            <dd>1,5 часа</dd>
+          </div>
+          <div class="spa-spec">
+            <dt>Ванны</dt>
+            <dd>две, рядом друг с другом</dd>
+          </div>
+          <div class="spa-spec">
+            <dt>Массаж</dt>
+            <dd>по желанию, отдельные части тела или общий</dd>
           </div>
           <div class="spa-spec">
             <dt>Стоимость</dt>
-            <dd class="spa-spec--empty">уточняется</dd>
+            <dd class="spa-spec--empty">уточняется по телефону</dd>
           </div>
           <div class="spa-spec">
             <dt>Противопоказания</dt>
             <dd class="spa-spec--empty">уточняются</dd>
           </div>
         </dl>
+
+        <p class="prose spa-call">
+          Записаться и узнать стоимость:
+          <a href={contacts.officePhone.href} class="spa-phone mono">{contacts.officePhone.label}</a>
+        </p>
+
+        <p class="placeholder-note spa-note">
+          <strong>Требуется от заказчика</strong>
+          Описание и длительность заполнены. Остались цена и — важнее —
+          противопоказания: процедура сочетает инфракрасную сауну, горячую ванну
+          и алкоголь, и такому сочетанию нужен явный перечень ограничений
+          на странице. Пункт «Описание SPA-процедуры — [ЗАПОЛНИТЬ]» из чек-листа
+          ассетов ТЗ закрыт частично.
+        </p>
       </div>
 
       <LeadForm
         topic="tour"
         title="Записаться на процедуру"
-        description="Оставьте контакты — расскажем про условия, длительность и свободное время."
+        description="Оставьте контакты — расскажем про стоимость, ограничения и свободное время."
         source="Пивные SPA-процедуры"
       />
     </div>
@@ -72,6 +103,32 @@ import { contacts } from '../../data/site';
     align-items: start;
   }
   .spa-phone { font-size: 20px; text-decoration: none; }
+  .spa-call { margin-top: var(--s-8); }
+
+  .spa-steps { margin-top: var(--s-8); }
+  .spa-steps ol {
+    counter-reset: step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .spa-steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: var(--s-8);
+    margin-bottom: var(--s-3);
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .spa-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--c-accent);
+  }
   .spa-note { margin-top: var(--s-8); }
 
   .spa-specs { margin: var(--s-8) 0 0; border-top: 1px solid var(--c-border); }
