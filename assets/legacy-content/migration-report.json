@@ -1,13 +1,13 @@
 {
-  "startedAt": "2026-08-22T16:48:11.045Z",
+  "startedAt": "2026-08-25T11:59:07.221Z",
   "pages": {
-    "total": 1,
-    "ok": 1,
+    "total": 144,
+    "ok": 144,
     "failed": 0
   },
   "images": {
-    "total": 2,
-    "ok": 2,
+    "total": 615,
+    "ok": 615,
     "skipped": 0
   },
   "failures": [
@@ -15,7 +15,232 @@
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Награждения/q-q-2018.html",
       "error": "полная дата не найдена, распознан только год 2018"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/granada.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/q-q.html",
+      "error": "полная дата не найдена, распознан только год 2019"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/chempion.html",
+      "error": "полная дата не найдена, распознан только год 2023"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/100best.html",
+      "error": "полная дата не найдена, распознан только год 2023"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Гости/totsamiy.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/rud.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/mintk.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/simpson.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/maryenko.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/miass.html",
+      "error": "полная дата не найдена, распознан только год 2016"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/smi.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/polit.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/argum.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/pomozem.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Гости/kostich.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/urmas.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/kodex.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустационный-зал-пива/pivnaya-na-karpinskogo.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Гости/chayf.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/bank.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/soloda.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/kvest.html",
+      "error": "полная дата не найдена, распознан только год 2012"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Награждения/deutsche.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/garage.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/22-18-00-only.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/6.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/zip-technologies.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/classification.html",
+      "error": "полная дата не найдена, распознан только год 2009"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/2.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/nagradi.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/sort.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/rozdestvensk.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/buhar.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/tikva.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/imperator.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/zoloto.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/vakansiya.html",
+      "error": "полная дата не найдена, распознан только год 2019"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Пивной-клуб/q-q.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/zip-technologies.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/tochky.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/zz.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/pivovarnya.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/mulliev.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/pell.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/phone.html",
+      "error": "дата публикации не распознана"
     }
   ],
-  "finishedAt": "2026-08-22T16:48:11.062Z"
+  "finishedAt": "2026-08-25T13:14:30.986Z"
 }
