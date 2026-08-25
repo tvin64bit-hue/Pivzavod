@@ -1,9 +1,10 @@
 {
-  "startedAt": "2026-08-25T11:59:07.221Z",
+  "startedAt": "2026-08-25T13:19:50.464Z",
   "pages": {
     "total": 144,
-    "ok": 144,
-    "failed": 0
+    "ok": 138,
+    "failed": 0,
+    "skipped": 6
   },
   "images": {
     "total": 615,
@@ -128,6 +129,11 @@
     },
     {
       "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Случайные-новости/promass.html",
+      "error": "полная дата не найдена, распознан только год 2013"
+    },
+    {
+      "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Награждения/deutsche.html",
       "error": "дата публикации не распознана"
     },
@@ -154,7 +160,7 @@
     {
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Случайные-новости/classification.html",
-      "error": "полная дата не найдена, распознан только год 2009"
+      "error": "дата публикации не распознана"
     },
     {
       "kind": "date",
@@ -170,6 +176,11 @@
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Дегустация/sort.html",
       "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/sort.html",
+      "error": "пустое тело статьи"
     },
     {
       "kind": "date",
@@ -198,6 +209,11 @@
     },
     {
       "kind": "date",
+      "url": "https://pivzavod74.ru/index.php/Дегустация/ira.html",
+      "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "date",
       "url": "https://pivzavod74.ru/index.php/vakansiya.html",
       "error": "полная дата не найдена, распознан только год 2019"
     },
@@ -217,9 +233,19 @@
       "error": "дата публикации не распознана"
     },
     {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/2011-10-18-04-25-31.html",
+      "error": "страница 404 донора"
+    },
+    {
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/zz.html",
       "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/zz.html",
+      "error": "страница 404 донора"
     },
     {
       "kind": "date",
@@ -227,9 +253,19 @@
       "error": "дата публикации не распознана"
     },
     {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/pivovarnya.html",
+      "error": "страница 404 донора"
+    },
+    {
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/mulliev.html",
       "error": "дата публикации не распознана"
+    },
+    {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/mulliev.html",
+      "error": "страница 404 донора"
     },
     {
       "kind": "date",
@@ -237,10 +273,15 @@
       "error": "дата публикации не распознана"
     },
     {
+      "kind": "empty",
+      "url": "https://pivzavod74.ru/index.php/Экскурсионная-программа/pell.html",
+      "error": "страница 404 донора"
+    },
+    {
       "kind": "date",
       "url": "https://pivzavod74.ru/index.php/phone.html",
       "error": "дата публикации не распознана"
     }
   ],
-  "finishedAt": "2026-08-25T13:14:30.986Z"
+  "finishedAt": "2026-08-25T13:31:46.601Z"
 }

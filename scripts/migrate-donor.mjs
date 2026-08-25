@@ -55,9 +55,12 @@ const LIMIT = Number(option('limit', '0')) || 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** Пивоварня работает с 2011 года; всё раньше — дата из текста, а не публикации */
+const SITE_ERA_FROM = 2010;
+
 const report = {
   startedAt: new Date().toISOString(),
-  pages: { total: 0, ok: 0, failed: 0 },
+  pages: { total: 0, ok: 0, failed: 0, skipped: 0 },
   images: { total: 0, ok: 0, skipped: 0 },
   failures: [],
 };
@@ -207,19 +210,36 @@ function parseDate(container, url) {
 
   const text = htmlToText(container);
 
+  // Дата из текста — это чаще дата события, чем публикации, и в исторических
+  // статьях встречается что угодно: «Индийский эль» дал 1835 год, «ПРОМАСС» —
+  // 1995. Принимаем только то, что попадает в срок жизни сайта.
+  const plausible = (d) => {
+    const year = d.getUTCFullYear();
+    return year >= SITE_ERA_FROM && year <= new Date().getUTCFullYear() ? d : null;
+  };
+
   const ru = text.match(/(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
   if (ru && RU_MONTHS[ru[2].toLowerCase()]) {
-    return new Date(Date.UTC(Number(ru[3]), RU_MONTHS[ru[2].toLowerCase()] - 1, Number(ru[1])));
+    const d = plausible(
+      new Date(Date.UTC(Number(ru[3]), RU_MONTHS[ru[2].toLowerCase()] - 1, Number(ru[1]))),
+    );
+    if (d) return d;
   }
 
   const dotted = text.match(/(\d{2})\.(\d{2})\.(\d{4})/);
   if (dotted) {
-    return new Date(Date.UTC(Number(dotted[3]), Number(dotted[2]) - 1, Number(dotted[1])));
+    const d = plausible(
+      new Date(Date.UTC(Number(dotted[3]), Number(dotted[2]) - 1, Number(dotted[1]))),
+    );
+    if (d) return d;
   }
 
   const dashed = text.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (dashed) {
-    return new Date(Date.UTC(Number(dashed[1]), Number(dashed[2]) - 1, Number(dashed[3])));
+    const d = plausible(
+      new Date(Date.UTC(Number(dashed[1]), Number(dashed[2]) - 1, Number(dashed[3]))),
+    );
+    if (d) return d;
   }
 
   return null;
@@ -235,7 +255,7 @@ function yearFallback(container, title) {
   if (!years) return null;
   // Берём самый поздний: в тексте могут упоминаться прошлые годы
   const year = Math.max(...years.map(Number));
-  if (year < 2005 || year > new Date().getUTCFullYear()) return null;
+  if (year < SITE_ERA_FROM || year > new Date().getUTCFullYear()) return null;
   return new Date(Date.UTC(year, 0, 1));
 }
 
@@ -467,8 +487,10 @@ async function migratePage(url, index, total) {
   const rawFile = path.join(CONFIG.rawDir, `${slugBase}.html`);
 
   let html;
+  let pageFromNetwork = true;
   if (RESUME && existsSync(rawFile)) {
     html = await fs.readFile(rawFile, 'utf8');
+    pageFromNetwork = false;
     console.log(`[${index}/${total}] из кэша: ${url}`);
   } else {
     console.log(`[${index}/${total}] загрузка: ${url}`);
@@ -520,6 +542,21 @@ async function migratePage(url, index, total) {
     if (fromNetwork) await sleep(CONFIG.crawlDelayMs);
   }
 
+  // Часть адресов из sitemap донора ведёт на его страницу «404 - Ошибка: 404»,
+  // причём с кодом 200. Такие страницы — не материалы, записей из них не делаем.
+  // ТЗ это подтверждает: раздел «Экскурсионная программа» исключён именно
+  // потому, что страниц по этим адресам на доноре уже нет.
+  if (/^404\b/.test(title) || body.length < 50) {
+    report.pages.skipped += 1;
+    report.failures.push({
+      kind: 'empty',
+      url,
+      error: /^404\b/.test(title) ? 'страница 404 донора' : 'пустое тело статьи',
+    });
+    console.log('    ✗ пропущено: страница без содержания');
+    return { url, slug: null, title, images: 0, skipped: true, pageFromNetwork };
+  }
+
   const slug = uniqueSlug(slugify(title), slugBase);
   const frontmatter = [
     '---',
@@ -551,7 +588,7 @@ async function migratePage(url, index, total) {
     await fs.writeFile(path.join(CONFIG.postsDir, `${slug}.md`), frontmatter, 'utf8');
   }
 
-  return { url, slug, title, images: localImages.length };
+  return { url, slug, title, images: localImages.length, pageFromNetwork };
 }
 
 async function main() {
@@ -589,17 +626,24 @@ async function main() {
   );
 
   for (const [i, url] of urls.entries()) {
+    let fetchedFromNetwork = true;
     try {
       const result = await migratePage(url, i + 1, urls.length);
-      report.pages.ok += 1;
-      console.log(`    → ${result.slug}.md (${result.images} изобр.)`);
+      fetchedFromNetwork = result.pageFromNetwork;
+      if (!result.skipped) {
+        report.pages.ok += 1;
+        console.log(`    → ${result.slug}.md (${result.images} изобр.)`);
+      }
     } catch (err) {
       report.pages.failed += 1;
       report.failures.push({ kind: 'page', url, error: String(err.message ?? err) });
       console.error(`    ✗ ${url}: ${err.message ?? err}`);
     }
 
-    if (i < urls.length - 1) await sleep(CONFIG.crawlDelayMs);
+    // Crawl-delay относится к запросам к донору. При повторном разборе из кэша
+    // (--resume) сети не касаемся, и выжидать нечего: полный переразбор
+    // 144 статей иначе стоил бы 12 минут пустого ожидания.
+    if (fetchedFromNetwork && i < urls.length - 1) await sleep(CONFIG.crawlDelayMs);
   }
 
   report.finishedAt = new Date().toISOString();
@@ -608,7 +652,10 @@ async function main() {
   }
 
   console.log('\n— Итог —');
-  console.log(`Страницы:    ${report.pages.ok} ок, ${report.pages.failed} с ошибкой`);
+  console.log(
+    `Страницы:    ${report.pages.ok} ок, ${report.pages.skipped} без содержания, ` +
+      `${report.pages.failed} с ошибкой`,
+  );
   console.log(`Изображения: ${report.images.ok} ок, ${report.images.skipped} пропущено`);
   console.log(`Отчёт:       ${path.relative(ROOT, CONFIG.reportFile)}`);
   if (report.failures.length) {
