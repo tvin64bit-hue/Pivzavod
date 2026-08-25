@@ -1,0 +1,190 @@
+---
+/**
+ * Полноэкранный просмотр фотографий.
+ *
+ * Подключается один раз на страницу и сам перехватывает клики по любым
+ * `<LegacyImage zoomable />`. Порядок снимков берётся из порядка в разметке,
+ * поэтому листание работает без дополнительной настройки.
+ */
+---
+
+<div class="lb" hidden data-lightbox aria-hidden="true">
+  <div class="lb__backdrop" data-lb-close></div>
+
+  <figure class="lb__frame" role="dialog" aria-modal="true" aria-label="Просмотр фотографии">
+    <img class="lb__img" data-lb-img src="" alt="" />
+    <figcaption class="lb__caption caption" data-lb-caption></figcaption>
+  </figure>
+
+  <button class="lb__btn lb__btn--close" type="button" aria-label="Закрыть" data-lb-close>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+  </button>
+
+  <button class="lb__btn lb__btn--prev" type="button" aria-label="Предыдущее фото" data-lb-prev>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+  </button>
+
+  <button class="lb__btn lb__btn--next" type="button" aria-label="Следующее фото" data-lb-next>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+  </button>
+
+  <p class="lb__counter mono" data-lb-counter></p>
+</div>
+
+<style>
+  .lb {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-agegate);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lb[hidden] { display: none; }
+
+  .lb__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 20, 16, 0.96);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor: zoom-out;
+  }
+
+  .lb__frame {
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    max-width: min(92vw, 1200px);
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: center;
+  }
+  .lb__img {
+    max-width: 100%;
+    max-height: 78vh;
+    width: auto;
+    border-radius: var(--r-md);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+  .lb__caption { text-align: center; max-width: 60ch; margin: 0; }
+
+  .lb__btn {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(43, 33, 27, 0.9);
+    border: 1px solid var(--c-border);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: border-color var(--t-fast), background-color var(--t-fast);
+  }
+  .lb__btn:hover { border-color: var(--c-accent); background: var(--c-surface); }
+  .lb__btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--c-text);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .lb__btn--close { top: var(--s-6); right: var(--s-6); }
+  .lb__btn--prev { left: var(--s-6); top: 50%; transform: translateY(-50%); }
+  .lb__btn--next { right: var(--s-6); top: 50%; transform: translateY(-50%); }
+  .lb__btn[hidden] { display: none; }
+
+  .lb__counter {
+    position: absolute;
+    bottom: var(--s-6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    margin: 0;
+  }
+
+  @media (max-width: 767px) {
+    .lb__btn { width: 42px; height: 42px; }
+    .lb__btn--close { top: var(--s-4); right: var(--s-4); }
+    .lb__btn--prev { left: var(--s-2); }
+    .lb__btn--next { right: var(--s-2); }
+    .lb__img { max-height: 68vh; }
+  }
+</style>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-lightbox]');
+  const triggers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-zoom]'));
+
+  if (box && triggers.length) {
+    const img = box.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const caption = box.querySelector<HTMLElement>('[data-lb-caption]')!;
+    const counter = box.querySelector<HTMLElement>('[data-lb-counter]')!;
+    const prevBtn = box.querySelector<HTMLButtonElement>('[data-lb-prev]')!;
+    const nextBtn = box.querySelector<HTMLButtonElement>('[data-lb-next]')!;
+
+    let index = 0;
+    let opener: HTMLElement | null = null;
+
+    const single = triggers.length === 1;
+    prevBtn.hidden = single;
+    nextBtn.hidden = single;
+    counter.hidden = single;
+
+    const show = (i: number) => {
+      index = (i + triggers.length) % triggers.length;
+      const t = triggers[index];
+      img.src = t.dataset.zoom ?? '';
+      img.alt = t.dataset.zoomAlt ?? '';
+      caption.textContent = t.dataset.zoomAlt ?? '';
+      counter.textContent = `${index + 1} / ${triggers.length}`;
+    };
+
+    const open = (i: number, from: HTMLElement) => {
+      opener = from;
+      show(i);
+      box.hidden = false;
+      box.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('is-locked');
+      box.querySelector<HTMLButtonElement>('[data-lb-close]')?.focus();
+    };
+
+    const close = () => {
+      box.hidden = true;
+      box.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('is-locked');
+      // Возвращаем фокус туда, откуда открыли, — иначе он теряется в начале страницы
+      opener?.focus();
+      opener = null;
+    };
+
+    triggers.forEach((t, i) => t.addEventListener('click', () => open(i, t)));
+    box.querySelectorAll('[data-lb-close]').forEach((b) => b.addEventListener('click', close));
+    prevBtn.addEventListener('click', () => show(index - 1));
+    nextBtn.addEventListener('click', () => show(index + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (box.hidden) return;
+      if (e.key === 'Escape') close();
+      if (!single && e.key === 'ArrowLeft') show(index - 1);
+      if (!single && e.key === 'ArrowRight') show(index + 1);
+    });
+
+    // Свайп по фотографии на телефоне
+    let startX = 0;
+    box.addEventListener('touchstart', (e) => { startX = e.changedTouches[0].clientX; }, { passive: true });
+    box.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (!single && Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+  }
+</script>

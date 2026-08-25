@@ -69,6 +69,7 @@ export const awards = [
       ['Медалей', '11 золотых'],
       ['Результат', 'Все сорта — победители'],
     ],
+    post: 'zoloto-so-vserossiyskoy-vystavki-zolotaya-osen',
     blogTag: 'nagrady',
   },
   {
@@ -84,6 +85,7 @@ export const awards = [
       ['Статус', 'Лауреаты'],
       ['Отбор', 'Региональная комиссия по качеству'],
     ],
+    post: 'nasha-produkciya-priznana-luchshey-na-konkurse-100-luchshih-tovarov-ro',
     blogTag: 'nagrady',
   },
   {
@@ -99,6 +101,7 @@ export const awards = [
       ['Статус', 'Победители'],
       ['С 2022', '+ «Лаборатория авторского пива»'],
     ],
+    post: 'pobediteli-konkursa-20-luchshih-tovarov-chelyabinskoy-oblasti',
     blogTag: 'nagrady',
   },
 ] as const;

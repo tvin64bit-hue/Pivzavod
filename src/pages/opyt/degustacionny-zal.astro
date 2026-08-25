@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import LegacyImage from '../../components/LegacyImage.astro';
 import LeadForm from '../../components/LeadForm.astro';
+import Lightbox from '../../components/Lightbox.astro';
 import { tastingGallery, tastingMenuPhoto } from '../../data/content';
 ---
 
@@ -34,6 +35,8 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
             src={tastingMenuPhoto}
             alt="Меню дегустационного зала «Лаборатории живого пива»"
             ratio="3 / 4"
+            fit="contain"
+            zoomable
             loading="eager"
           />
         </div>
@@ -52,7 +55,12 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
       <div class="bento">
         {tastingGallery.map((photo, i) => (
           <div class:list={['bento__item', i === 0 && 'bento__item--wide', i === 3 && 'bento__item--tall']}>
-            <LegacyImage src={photo} alt={`Дегустационный зал, фото ${i + 1}`} ratio="4 / 3" />
+            <LegacyImage
+              src={photo}
+              alt={`Дегустационный зал, фото ${i + 1}`}
+              ratio="4 / 3"
+              zoomable
+            />
           </div>
         ))}
       </div>
@@ -70,6 +78,8 @@ import { tastingGallery, tastingMenuPhoto } from '../../data/content';
       />
     </div>
   </section>
+
+  <Lightbox />
 </BaseLayout>
 
 <style>

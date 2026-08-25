@@ -27,7 +27,7 @@ const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } 
     <div class="tube__face tube__face--front">
       <div class="tube__photo">
         {photo ? (
-          <LegacyImage src={photo} alt={title} ratio="4 / 3" />
+          <LegacyImage src={photo} alt={title} ratio="4 / 3" fit="contain" />
         ) : (
           <div class="tube__photo-empty" aria-hidden="true"></div>
         )}
@@ -71,6 +71,9 @@ const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } 
     position: relative;
     perspective: 1400px;
     min-height: 420px;
+    /* Держим длительность в одном месте: от неё зависит и задержка появления
+       ссылки на обороте */
+    --t-flip-duration: 400ms;
   }
 
   .tube__inner {
@@ -78,7 +81,7 @@ const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } 
     height: 100%;
     min-height: inherit;
     transform-style: preserve-3d;
-    transition: transform var(--t-flip);
+    transition: transform var(--t-flip-duration) ease-in-out;
   }
   .tube.is-flipped .tube__inner { transform: rotateY(180deg); }
 
@@ -127,6 +130,7 @@ const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } 
     transition: opacity var(--t-fast);
   }
   .tube:hover .tube__hint { opacity: 1; }
+  .tube.is-flipped .tube__hint { opacity: 0; }
 
   .tube__specs { margin: 0; }
   .tube__spec {
@@ -175,9 +179,15 @@ const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } 
     text-decoration: none;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--t-fast);
+    /* Прячется мгновенно, а появляется только когда оборот уже развернулся:
+       иначе ссылка проступает сквозь карточку в середине переворота. */
+    transition: opacity 160ms ease;
   }
-  .tube.is-flipped .tube__cta { opacity: 1; pointer-events: auto; }
+  .tube.is-flipped .tube__cta {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 200ms ease var(--t-flip-duration);
+  }
 
   @media (max-width: 767px) {
     .tube { min-height: 380px; }

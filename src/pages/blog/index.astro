@@ -25,12 +25,6 @@ const dateFmt = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-/**
- * Сколько статей донора уже перенесено. В sitemap 153 адреса, но девять из них —
- * корень и витрины разделов, а не материалы: их скрипт миграции пропускает.
- */
-const TOTAL_LEGACY = 144;
-const migrated = posts.length;
 ---
 
 <BaseLayout
@@ -86,14 +80,6 @@ const migrated = posts.length;
 
       <p class="feed__empty" data-empty hidden>В этой категории пока нет записей.</p>
 
-      {migrated < TOTAL_LEGACY && (
-        <p class="placeholder-note feed__note">
-          <strong>Архив переносится</strong>
-          Опубликовано {migrated} из {TOTAL_LEGACY} статей сайта-донора. Остальные
-          переносятся workflow «Миграция контента с донора» во вкладке Actions.
-          Подробности и порядок запуска — в README, раздел «Миграция контента».
-        </p>
-      )}
     </div>
   </section>
 </BaseLayout>

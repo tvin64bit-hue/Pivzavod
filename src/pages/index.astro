@@ -2,15 +2,24 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TubeCard from '../components/TubeCard.astro';
 import LegacyImage from '../components/LegacyImage.astro';
+import { getCollection } from 'astro:content';
 import { awards } from '../data/content';
 import { site } from '../data/site';
 
-/** Награда → соответствующая запись в Блоге (раздел 4.1 «Награды-карусель») */
-const awardPostSlug: Record<string, string> = {
-  'zolotaya-osen': 'zolotaya-osen',
-  '100-luchshih-tovarov': '100-luchshih-tovarov-rossii',
-  '20-luchshih-tovarov': '20-luchshih-tovarov-oblasti',
-};
+/**
+ * Награда → запись в Блоге (раздел 4.1 «Награды-карусель»).
+ * Слаг сверяется с коллекцией на сборке: записи архива переименовывались при
+ * миграции, и ссылки на карточках молча повисали. Теперь сборка падает сразу.
+ */
+const posts = new Set((await getCollection('blog')).map((p) => p.id));
+for (const award of awards) {
+  if (!posts.has(award.post)) {
+    throw new Error(
+      `Карточка награды «${award.title}» ссылается на запись «${award.post}», ` +
+        'которой нет в блоге. Проверьте поле post в src/data/content.ts.',
+    );
+  }
+}
 ---
 
 <BaseLayout
@@ -21,16 +30,51 @@ const awardPostSlug: Record<string, string> = {
   <!-- Hero -->
   <section class="hero grain">
     <div class="container hero__inner">
-      <p class="label">{site.tagline}</p>
-      <h1>Лаборатория живого пива</h1>
-      <p class="hero__sub">
-        Варим честное нефильтрованное пиво в Челябинске — и открываем двери каждому,
-        кто хочет попробовать.
-      </p>
-      <div class="btn-row">
-        <a class="btn btn--primary" href="/opyt">Где попробовать</a>
-        <a class="btn btn--secondary" href="/gde-kupit">Где купить</a>
+      <!-- Регалии сразу, до скролла: они же раскрыты карточками ниже -->
+      <ul class="hero__badges">
+        {awards.map((award) => (
+          <li>
+            <a href={`/blog/${award.post}`}>
+              <span class="hero__badge-title">{award.title}</span>
+              <span class="hero__badge-sub">{award.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="hero__main">
+        <p class="label">{site.tagline}</p>
+        <h1>Лаборатория живого пива</h1>
+        <p class="hero__sub">
+          Варим честное нефильтрованное пиво в Челябинске — и открываем двери каждому,
+          кто хочет попробовать.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/opyt">Где попробовать</a>
+          <a class="btn btn--secondary" href="/gde-kupit">Где купить</a>
+        </div>
       </div>
+
+      <!-- Цифры вместо пустоты: то же, чем страница и так гордится ниже,
+           но видно сразу, без скролла -->
+      <dl class="hero__facts">
+        <div class="hero__fact">
+          <dt>Лет варим</dt>
+          <dd>с 2011</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Золотых медалей</dt>
+          <dd>11</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Точек продаж</dt>
+          <dd>6</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Фильтрация</dt>
+          <dd>нет</dd>
+        </div>
+      </dl>
     </div>
   </section>
 
@@ -73,7 +117,7 @@ const awardPostSlug: Record<string, string> = {
             subtitle={award.summary}
             photo={award.cover}
             specs={award.specs}
-            href={`/blog/${awardPostSlug[award.slug]}`}
+            href={`/blog/${award.post}`}
             hrefLabel="Читать в блоге"
           />
         ))}
@@ -127,7 +171,79 @@ const awardPostSlug: Record<string, string> = {
       radial-gradient(90% 90% at 78% 22%, rgba(244, 169, 59, 0.2), transparent 62%),
       linear-gradient(135deg, #2B211B, #1C1410 70%);
   }
-  .hero__inner { position: relative; z-index: 2; padding-block: var(--s-24); }
+  .hero__inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-block: var(--s-16);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-16);
+  }
+  .hero__main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  .hero__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .hero__badges li { margin: 0; }
+  .hero__badges a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    background: rgba(43, 33, 27, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    text-decoration: none;
+    transition: border-color var(--t-fast), transform var(--t-fast);
+  }
+  .hero__badges a:hover { border-color: var(--c-accent); transform: translateY(-2px); }
+  .hero__badge-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .hero__badge-sub {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--c-muted);
+  }
+
+  /* Полоса фактов прижата к низу экрана — она же подсказывает, что ниже есть
+     ещё содержимое */
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-6);
+    margin: 0;
+    padding-top: var(--s-8);
+    border-top: 1px solid var(--c-border);
+  }
+  .hero__fact dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    margin-bottom: var(--s-2);
+  }
+  .hero__fact dd {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 600;
+    color: var(--c-accent);
+  }
   .hero h1 { max-width: 16ch; }
   .hero__sub {
     font-size: 21px;
@@ -138,8 +254,18 @@ const awardPostSlug: Record<string, string> = {
   }
 
   @media (max-width: 1023px) { .hero { min-height: 90vh; } }
+  @media (max-width: 1023px) {
+    .hero__facts { gap: var(--s-4); }
+    .hero__fact dd { font-size: 24px; }
+  }
   @media (max-width: 767px) {
     .hero { min-height: 80vh; }
+    .hero__inner { gap: var(--s-8); padding-block: var(--s-12); }
+    .hero__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4); }
+    .hero__badges { gap: var(--s-2); }
+    .hero__badges a { padding: var(--s-2) var(--s-3); }
+    .hero__badge-title { font-size: 13px; }
+    .hero__fact dd { font-size: 22px; }
     .hero__sub { font-size: 17px; line-height: 27px; margin-bottom: var(--s-8); }
     .hero .btn-row .btn { width: 100%; }
   }
