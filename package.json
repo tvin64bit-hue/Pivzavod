@@ -10,20 +10,19 @@
     "preview": "astro preview",
     "check": "astro check",
     "migrate": "node scripts/migrate-donor.mjs",
-    "check:functions": "tsc -p functions/tsconfig.json",
-    "preview:cf": "wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "nginx": "node scripts/build-nginx-conf.mjs",
+    "serve": "node server/lead.mjs",
+    "deploy": "./deploy/deploy.sh"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
-    "astro": "^5.14.1"
+    "astro": "^5.14.1",
+    "nodemailer": "^9.0.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@cloudflare/workers-types": "^5.20260823.1",
     "sharp": "^0.34.4",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.125.0"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"

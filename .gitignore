@@ -1,13 +1,10 @@
 node_modules/
 dist/
 .astro/
-.wrangler/
+# Локальные настройки почты: там пароль от ящика
 .env
 .env.*
-!.env.example
-# Локальные секреты для `wrangler pages dev` — там лежит токен бота
-.dev.vars
-.dev.vars.*
+deploy/nginx/*.local.conf
 .DS_Store
 npm-debug.log*
 # Сырой HTML с донора намеренно хранится в репозитории: он позволяет

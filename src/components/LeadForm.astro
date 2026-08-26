@@ -5,14 +5,14 @@ import { leadTopics, type LeadTopic } from '../data/site';
  * Единая форма заявки — раздел 4 «Сквозные компоненты».
  * Используется на страницах «Впечатления», «Опт», «Контакты», «Вакансии»,
  * «Осторожно, подделки». Тема предзаполняется в зависимости от страницы.
- * Отправка — POST /api/lead → Telegram Bot API (раздел 7 ТЗ, functions/api/lead.ts).
+ * Отправка — POST /api/lead → письмо на почту (server/lead.mjs).
  */
 interface Props {
   /** Предзаполненная тема обращения */
   topic?: LeadTopic;
   title?: string;
   description?: string;
-  /** Метка формы для сообщения в Telegram — помогает понять, откуда заявка */
+  /** Метка формы для письма — помогает понять, с какой страницы заявка */
   source?: string;
   id?: string;
   /**

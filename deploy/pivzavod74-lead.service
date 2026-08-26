@@ -1,0 +1,42 @@
+# Сервис приёма заявок. Ставится в /etc/systemd/system/
+#
+#   sudo cp deploy/pivzavod74-lead.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now pivzavod74-lead
+
+[Unit]
+Description=Приём заявок с сайта pivzavod74.ru
+Documentation=https://github.com/tvin64bit-hue/Pivzavod
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/pivzavod74
+
+# Пароль от почты лежит здесь, а не в этом файле: юнит попадает в git,
+# а /etc/pivzavod74.env — нет. Права на него должны быть 600.
+EnvironmentFile=/etc/pivzavod74.env
+
+ExecStart=/usr/bin/node /srv/pivzavod74/server/lead.mjs
+Restart=always
+RestartSec=5
+
+# Сервису нужно только читать свой каталог и ходить в SMTP наружу
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=256M
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pivzavod74-lead
+
+[Install]
+WantedBy=multi-user.target
