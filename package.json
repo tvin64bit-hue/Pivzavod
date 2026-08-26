@@ -15,7 +15,8 @@
     "migrate": "node scripts/migrate-donor.mjs",
     "nginx": "node scripts/build-nginx-conf.mjs",
     "serve": "node server/app.mjs",
-    "deploy": "./deploy/deploy.sh"
+    "deploy": "./deploy/deploy.sh",
+    "local": "node scripts/local.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

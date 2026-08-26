@@ -94,13 +94,7 @@ const buildOnce = async () => {
     return;
   }
 
-  // Подмена одной операцией: rename симлинка атомарен, полусобранного
-  // состояния посетитель не увидит
-  const tmpLink = `${LIVE}.new`;
-  await rm(tmpLink, { recursive: true, force: true });
-  await symlink(outDir, tmpLink);
-  await rename(tmpLink, LIVE);
-
+  await swapLive(outDir);
   await dropOldReleases();
 
   state.status = 'idle';
@@ -108,9 +102,44 @@ const buildOnce = async () => {
   state.durationMs = state.finishedAt - started;
 };
 
+/**
+ * Подменяет рабочую сборку готовой.
+ *
+ * На сервере это переключение симлинка: rename симлинка атомарен, поэтому
+ * посетитель не может застать полусобранное состояние.
+ *
+ * На Windows создать симлинк на каталог без прав администратора нельзя
+ * (EPERM), а проверять сайт локально надо. Там переносим каталог: секунду
+ * сайт недоступен, но локально это никого не трогает.
+ */
+const swapLive = async (outDir) => {
+  const tmpLink = `${LIVE}.new`;
+  await rm(tmpLink, { recursive: true, force: true });
+
+  try {
+    // 'junction' — тип для Windows, где обычный симлинк на каталог требует
+    // прав администратора; на Linux аргумент игнорируется
+    await symlink(outDir, tmpLink, 'junction');
+    await rename(tmpLink, LIVE);
+    return;
+  } catch (err) {
+    console.warn(`build: подмена симлинком не удалась (${err.code ?? err.message}), переношу каталог`);
+    await rm(tmpLink, { recursive: true, force: true });
+  }
+
+  // Запасной путь: подменяем каталог целиком
+  const previous = `${LIVE}.old`;
+  await rm(previous, { recursive: true, force: true });
+  if (existsSync(LIVE)) await rename(LIVE, previous);
+  await rename(outDir, LIVE);
+  await rm(previous, { recursive: true, force: true });
+};
+
 /** Держим три последних сборки: откатиться есть куда, диск не забивается */
 const dropOldReleases = async () => {
   const { readdir } = await import('node:fs/promises');
+  // На запасном пути свежая сборка уже переехала в LIVE, так что здесь
+  // остаются только предыдущие — держим три
   const entries = (await readdir(RELEASES).catch(() => []))
     .filter((name) => /^\d+$/.test(name))
     .sort((a, b) => Number(b) - Number(a));
