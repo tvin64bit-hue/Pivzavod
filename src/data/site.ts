@@ -121,15 +121,16 @@ export const leadTopics = [
 export type LeadTopic = (typeof leadTopics)[number]['value'];
 
 /**
- * Карты. Пока ссылки не заданы, показывается карта Яндекса с поиском по адресу
- * (одна метка). Чтобы вывести все точки продаж на одной карте, соберите её на
- * yandex.ru/map-constructor и вставьте ссылку вида
- * https://yandex.ru/map-widget/v1/?um=constructor%3A…&source=constructor
- * — разметку менять не нужно. Подробности в README.
+ * Карты. Ссылку берём из конструктора yandex.ru/map-constructor — годится
+ * любая из двух, которые он предлагает: и «ссылка на карту» (/maps/?um=…),
+ * и код для вставки (/map-widget/v1/?um=…). Компонент YandexMap приводит их
+ * к виду виджета сам. Если ссылки нет, показывается поиск по адресу —
+ * одна метка. Подробности в README.
  */
 export const maps = {
-  /** Карта со всеми 6 точками продаж — [ЗАПОЛНИТЬ] заказчиком */
-  outletsConstructorUrl: null as string | null,
+  /** Карта со всеми шестью точками продаж, собрана в конструкторе */
+  outletsConstructorUrl:
+    'https://yandex.ru/maps/?um=constructor%3A44e6b3eb91a8266c087d34cba06390a9784e0f49b4fd4dd45de61dfe0ad301af&source=constructorLink' as string | null,
   /** Карта офиса на Карпинского, 62 */
   officeConstructorUrl: null as string | null,
   officeQuery: 'Челябинск, улица Карпинского, 62',

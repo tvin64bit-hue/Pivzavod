@@ -20,14 +20,30 @@ interface Props {
 
 const { constructorUrl, query, zoom = 17, title, height = 460 } = Astro.props;
 
-const src =
-  constructorUrl ||
-  `https://yandex.ru/map-widget/v1/?mode=search&text=${encodeURIComponent(query ?? '')}&z=${zoom}`;
+/**
+ * Конструктор карт отдаёт ссылку в двух видах: «поделиться» (yandex.ru/maps/?um=…)
+ * и код для вставки (yandex.ru/map-widget/v1/?um=…). В iframe работает только
+ * второй, поэтому первый приводим к нему сами — чтобы заказчику было всё равно,
+ * какую из двух он скопировал.
+ */
+function toWidgetUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.startsWith('/map-widget/')) return url;
+    const um = parsed.searchParams.get('um');
+    if (!um) return url;
+    return `https://yandex.ru/map-widget/v1/?um=${encodeURIComponent(um)}&source=constructor`;
+  } catch {
+    return url;
+  }
+}
+
+const src = constructorUrl
+  ? toWidgetUrl(constructorUrl)
+  : `https://yandex.ru/map-widget/v1/?mode=search&text=${encodeURIComponent(query ?? '')}&z=${zoom}`;
 
 /** Виджет режут блокировщики рекламы, поэтому рядом даём обычную ссылку */
-const fallbackUrl = constructorUrl
-  ? src
-  : `https://yandex.ru/maps/?text=${encodeURIComponent(query ?? '')}`;
+const fallbackUrl = constructorUrl || `https://yandex.ru/maps/?text=${encodeURIComponent(query ?? '')}`;
 ---
 
 <div class="map" style={`--map-h:${height}px`}>
