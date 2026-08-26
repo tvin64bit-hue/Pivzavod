@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { tastingGallery, tastingMenuPhoto } from '../../data/content';
+---
+
+<BaseLayout
+  title="Дегустационный зал"
+  description="Дегустационный зал «Лаборатории живого пива» в Челябинске: ул. Карпинского, 62, 3 этаж. Меню, интерьер и запись на дегустацию."
+>
+  <PageHeader
+    label="Впечатления"
+    title="Дегустационный зал"
+    lead="Приглашаем гостей посетить дегустационный зал, расположенный на ул. Карпинского, 62 (3 этаж), попробовать наше пиво."
+    crumbs={[{ label: 'Впечатления', href: '/opyt' }, { label: 'Дегустационный зал' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="menu-block">
+        <div class="menu-block__text">
+          <p class="label">Меню зала</p>
+          <h2>Что наливаем</h2>
+          <p>
+            Живое нефильтрованное пиво собственной варки — то же, что уезжает
+            в кегах в наши точки продаж, только на два этажа ближе к варочному цеху.
+          </p>
+          <a class="btn btn--primary" href="#zayavka">Записаться на дегустацию</a>
+        </div>
+        <div class="menu-block__media">
+          <LegacyImage
+            src={tastingMenuPhoto}
+            alt="Меню дегустационного зала «Лаборатории живого пива»"
+            ratio="1 / 1"
+            fit="contain"
+            zoomable
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Буклет зала</p>
+        <h2>Меню и режим работы</h2>
+        <p class="lead">
+          Страницы фирменного буклета: история зала, часы работы банкетного зала,
+          линейка сортов и кухня. Нажмите, чтобы прочитать.
+        </p>
+      </div>
+
+      <div class="booklet">
+        {tastingGallery.map((photo, i) => (
+          <div class="booklet__page">
+            <LegacyImage
+              src={photo}
+              alt={`Буклет дегустационного зала, страница ${i + 1}`}
+              ratio="700 / 985"
+              zoomable
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <LeadForm
+        id="zayavka"
+        topic="tour"
+        title="Записаться на дегустацию"
+        description="Напишите желаемую дату и число гостей — подтвердим время и расскажем, как пройти."
+        source="Дегустационный зал"
+        commentLabel="Пожелания"
+        commentPlaceholder="Желаемая дата и время, сколько будет гостей, есть ли повод"
+      />
+    </div>
+  </section>
+
+  <Lightbox />
+</BaseLayout>
+
+<style>
+  /* Страницы буклета одного размера (700×985), поэтому сетка ровная,
+     а точное соотношение сторон рамки убирает обрезку полностью */
+  .booklet {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+  .booklet__page :global(figure) { background: var(--c-surface); }
+
+  @media (max-width: 1023px) {
+    .booklet { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 767px) {
+    .booklet {
+      display: flex;
+      gap: var(--s-3);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      padding-bottom: var(--s-3);
+      scrollbar-width: none;
+    }
+    .booklet::-webkit-scrollbar { display: none; }
+    .booklet__page { flex: 0 0 62%; scroll-snap-align: center; }
+  }
+
+  .menu-block {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .menu-block__text p { max-width: 52ch; margin-bottom: var(--s-8); }
+
+
+  @media (max-width: 1023px) {
+    .menu-block { gap: var(--s-8); }
+  }
+
+  @media (max-width: 767px) {
+    .menu-block { grid-template-columns: minmax(0, 1fr); }
+    .menu-block__media { order: -1; max-width: 320px; }
+    .menu-block__text .btn { width: 100%; }
+
+  }
+</style>

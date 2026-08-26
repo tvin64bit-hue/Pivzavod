@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { awards } from '../../data/content';
+---
+
+<BaseLayout
+  title="Награды"
+  description="Награды пивоварни: 11 золотых медалей выставки «Золотая осень» (2016–2019), лауреаты «100 лучших товаров России», победители «20 лучших товаров Челябинской области»."
+>
+  <PageHeader
+    label="О компании"
+    title="Награды"
+    lead="Медали — не самоцель, но независимая дегустационная комиссия врёт реже, чем собственный маркетинг."
+    crumbs={[{ label: 'О компании', href: '/o-kompanii' }, { label: 'Награды' }]}
+  />
+
+  {awards.map((award, i) => (
+    <section class:list={['section', i > 0 && 'section--tight']}>
+      <div class="container">
+        <div class="award">
+          <div class="award__text">
+            <p class="label">{award.summary}</p>
+            <h2>{award.title}</h2>
+            <p>{award.text}</p>
+            <dl class="award__specs">
+              {award.specs.map(([k, v]) => (
+                <div class="award__spec">
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div class="award__gallery">
+            {award.gallery.map((photo, j) => (
+              <LegacyImage
+                src={photo}
+                alt={`${award.title} — фото ${j + 1}`}
+                ratio="4 / 3"
+                fit="contain"
+                zoomable
+                loading={i === 0 && j === 0 ? 'eager' : 'lazy'}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <Lightbox />
+</BaseLayout>
+
+<style>
+  .award {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-12);
+    align-items: start;
+  }
+  .award__text h2 { margin-bottom: var(--s-6); }
+  .award__text p { max-width: 52ch; }
+
+  .award__specs {
+    margin: var(--s-8) 0 0;
+    border-top: 1px solid var(--c-border);
+  }
+  .award__spec {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .award__spec dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+  }
+  .award__spec dd { margin: 0; font-size: 14px; text-align: right; }
+
+  /* Bento: первая фотография крупнее остальных */
+  .award__gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+  /* Обложка занимает всю ширину. :global — потому что рамку рисует
+     LegacyImage, и без него правило не достаёт до чужого компонента */
+  .award__gallery > :global(.legacy):first-child { grid-column: 1 / -1; }
+
+  @media (max-width: 1023px) {
+    .award { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+  }
+  @media (max-width: 480px) {
+    .award__gallery { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

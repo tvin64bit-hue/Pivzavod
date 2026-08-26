@@ -1,0 +1,372 @@
+@import './tokens.css';
+
+/* ==========================================================================
+   Сброс и база
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+body.is-locked { overflow: hidden; }
+
+img, svg, video, iframe { max-width: 100%; }
+img, video { height: auto; display: block; }
+
+/* ==========================================================================
+   Типографика — таблица «Уровень / Шрифт / Desktop / Mobile» раздела 3
+   ========================================================================== */
+
+h1, h2, h3, h4 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  margin: 0 0 var(--s-6);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 { font-size: 56px; line-height: 60px; }
+h2 { font-size: 40px; line-height: 48px; }
+h3 { font-size: 28px; line-height: 36px; }
+h4 { font-size: 22px; line-height: 30px; font-weight: 500; }
+
+h5 {
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+  margin: 0 0 var(--s-3);
+}
+
+/* H6 / лейблы — «лабораторные» подписи */
+h6, .label {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-accent);
+  margin: 0 0 var(--s-4);
+}
+
+@media (max-width: 767px) {
+  h1 { font-size: 34px; line-height: 40px; }
+  h2 { font-size: 28px; line-height: 34px; }
+  h3 { font-size: 22px; line-height: 28px; }
+  h4 { font-size: 19px; line-height: 26px; }
+  h5 { font-size: 16px; line-height: 24px; }
+  h6, .label { font-size: 12px; line-height: 16px; }
+  body { font-size: 15px; line-height: 24px; }
+}
+
+p { margin: 0 0 var(--s-4); }
+p:last-child { margin-bottom: 0; }
+
+.caption {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--c-muted);
+}
+@media (max-width: 767px) { .caption { font-size: 13px; line-height: 20px; } }
+
+.lead {
+  font-size: 19px;
+  line-height: 30px;
+  color: var(--c-muted);
+  max-width: 68ch;
+}
+@media (max-width: 767px) { .lead { font-size: 17px; line-height: 27px; } }
+
+.mono { font-family: var(--f-mono); }
+
+a {
+  color: var(--c-accent);
+  text-decoration-color: rgba(244, 169, 59, 0.4);
+  text-underline-offset: 3px;
+  transition: color var(--t-fast), text-decoration-color var(--t-fast);
+}
+a:hover { color: var(--c-accent-hover); text-decoration-color: currentColor; }
+
+/* Телефон и почта — основные действия на мобильном, поэтому цель нажатия
+   доводим до рекомендованных 24px по высоте */
+@media (hover: none) {
+  a[href^='tel:'],
+  a[href^='mailto:'] {
+    display: inline-block;
+    padding-block: 4px;
+  }
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+ul, ol { margin: 0 0 var(--s-4); padding-left: 1.25em; }
+li { margin-bottom: var(--s-2); }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--c-border);
+  margin: var(--s-12) 0;
+}
+
+/* ==========================================================================
+   Сетка и раскладка
+   ========================================================================== */
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section { padding-block: var(--s-24); }
+.section--tight { padding-block: var(--s-16); }
+@media (max-width: 767px) {
+  .section { padding-block: var(--s-16); }
+  .section--tight { padding-block: var(--s-12); }
+}
+
+.section-head { margin-bottom: var(--s-12); max-width: 76ch; }
+.prose { max-width: 72ch; }
+
+.grid { display: grid; gap: var(--s-6); }
+.grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1023px) {
+  .grid--3, .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .grid--2, .grid--3, .grid--4 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==========================================================================
+   Grain-текстура — фишка №3 дизайн-системы.
+   Тонкий шум поверх тёмных фонов, 5–8% opacity, blend-mode overlay.
+   ========================================================================== */
+
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: var(--grain-url);
+  background-size: 180px 180px;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Кнопки — состояния из раздела 3
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 14px var(--s-8);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast),
+              border-color var(--t-fast), transform var(--t-fast),
+              box-shadow var(--t-fast);
+}
+
+.btn--primary {
+  background: var(--c-accent);
+  color: var(--c-bg);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--c-accent-hover);
+  color: var(--c-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(244, 169, 59, 0.28);
+}
+.btn--primary:active:not(:disabled) {
+  background: var(--c-accent-active);
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: rgba(244, 169, 59, 0.1);
+  color: var(--c-accent);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  background: var(--c-disabled-bg);
+  border-color: transparent;
+  color: var(--c-disabled-text);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+
+/* ==========================================================================
+   Карточки
+   ========================================================================== */
+
+.card {
+  position: relative;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--s-8);
+  transition: border-color var(--t-fast), transform var(--t-fast);
+}
+.card:where(a, .card--link):hover,
+a:hover > .card {
+  border-color: var(--c-accent);
+  transform: translateY(-4px);
+}
+
+a.card { display: block; color: inherit; text-decoration: none; }
+a.card:hover { color: inherit; }
+
+.card__media {
+  margin: calc(var(--s-8) * -1) calc(var(--s-8) * -1) var(--s-6);
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, #241A15, #3A2C22);
+}
+.card__media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ==========================================================================
+   Вспомогательное
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--s-4);
+  top: -100px;
+  z-index: 999;
+  padding: var(--s-3) var(--s-6);
+  background: var(--c-accent);
+  color: var(--c-bg);
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--t-fast);
+}
+.skip-link:focus { top: var(--s-4); }
+
+.tag {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  color: var(--c-muted);
+}
+
+/* Временные плейсхолдеры для блоков [ЗАПОЛНИТЬ] — раздел 9 ТЗ.
+   Оформлены так, чтобы их нельзя было не заметить и забыть заменить. */
+.placeholder-note {
+  border: 1px dashed var(--c-ochre);
+  border-radius: var(--r-md);
+  background: rgba(138, 92, 43, 0.12);
+  padding: var(--s-4) var(--s-6);
+  color: var(--c-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+.placeholder-note strong {
+  font-family: var(--f-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  color: var(--c-accent);
+  display: block;
+  margin-bottom: var(--s-2);
+}
+
+/* Таблицы (оптовый прайс, реквизиты) */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+table.data th, table.data td {
+  text-align: left;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--c-border);
+  vertical-align: top;
+}
+table.data th {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-accent);
+  font-weight: 500;
+  white-space: nowrap;
+}

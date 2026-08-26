@@ -1,0 +1,52 @@
+# Редиректы со старых URL сайта-донора (Joomla) на новую структуру.
+# Формат: <откуда> <куда> <код>. Первое совпадение выигрывает.
+#
+# Сам файл никуда не раздаётся: он служит источником для генератора конфига
+# nginx (scripts/build-nginx-conf.mjs). Точечные редиректы на 127 записей
+# блога генератор добавляет сам — из поля legacyUrl каждой статьи, так что
+# сюда их дублировать не надо.
+#
+# Кириллица здесь записана процентным кодированием — так её отдал донор.
+# Генератор раскодирует пути: nginx кладёт в $uri уже раскодированный путь,
+# и правило с буквами ловит оба варианта — и %D0%9D…, и сырой UTF-8.
+
+# --- Служебные страницы донора: их содержание живёт на страницах сайта ---
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9-%D0%B7%D0%B0%D0%BB-%D0%BF%D0%B8%D0%B2%D0%B0/pivnaya-na-karpinskogo.html /opyt/degustacionny-zal 301  # menyu-na-karpinskogo-d-62
+/index.php/%D0%9F%D0%B8%D0%B2%D0%BD%D0%BE%D0%B9-%D0%BA%D0%BB%D1%83%D0%B1/q-q.html /gde-kupit 301  # nashe-pivo-mozhno-poprobovat-tolko-zdes
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/tochky.html /gde-kupit/tochki-prodazh 301  # nashe-pivo-v-tochkah-roznicy
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/zip-technologies.html /gde-kupit/opt 301  # prays-optovikam
+/index.php/2.html /o-kompanii 301  # sodruzhestvo-pivovaren-laboratoriya-piva
+/index.php/2011-11-23-09-41-05.html /o-kompanii/rukovodstvo 301  # rukovoditeli-i-otvetstvennye-lica-druzhestvennyh-pivovaren
+/index.php/2011-11-23-18-28-06.html /kontakty 301  # nashi-rekvizity
+/index.php/2011-11-26-02-45-30.html /pivnoy-folklor 301  # pivo-i-zdorove
+/index.php/phone.html /kontakty 301  # mestoraspolozhenie-ooo-laboratoriya-zhivogo-piva
+/index.php/vakansiya.html /o-kompanii/vakansii 301  # vakansii
+/index.php/zip-technologies.html /gde-kupit/opt 301  # zip-technologies
+
+# --- Разделы ---
+/index.php/%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # Новости
+/index.php/%D0%9D%D0%B0%D0%B3%D1%80%D0%B0%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F/* /o-kompanii/nagrady 301  # Награждения
+/index.php/%D0%A1%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # Случайные-новости
+/index.php/%D0%93%D0%BE%D1%81%D1%82%D0%B8/* /blog?kategoriya=raznoe 301  # Гости
+/index.php/%D0%9E%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5/* /o-kompanii/pivovarnya 301  # Оборудование
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9-%D0%B7%D0%B0%D0%BB-%D0%BF%D0%B8%D0%B2%D0%B0/* /opyt/degustacionny-zal 301  # Дегустационный-зал-пива
+/index.php/%D0%9E-%D0%BD%D0%B0%D1%81-%D0%BF%D0%B8%D1%88%D1%83%D1%82/* /blog?kategoriya=pressa 301  # О-нас-пишут
+/index.php/%D0%A3%D1%87%D1%91%D0%B1%D0%B0/* /blog?kategoriya=komandirovki 301  # Учёба
+/index.php/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D0%BA-%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B8/* /blog?kategoriya=otrasl 301  # Вопросы-к-власти
+/index.php/%D0%9F%D0%BB%D0%BE%D1%85%D0%B8%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog?kategoriya=otrasl 301  # Плохие-новости
+/index.php/%D1%81%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B5-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/* /blog 301  # случайные-новости
+/index.php/%D0%94%D0%B5%D0%B3%D1%83%D1%81%D1%82%D0%B0%D1%86%D0%B8%D1%8F/* /blog?kategoriya=degustacii 301  # Дегустация
+/index.php/%D0%9F%D0%B8%D0%B2%D0%BD%D0%BE%D0%B9-%D0%BA%D0%BB%D1%83%D0%B1/* /blog 301  # Пивной-клуб
+/index.php/%D0%90%D0%BA%D1%86%D0%B8%D0%B8/* /blog 301  # Акции
+/index.php/%D0%92%D0%B0%D0%BD%D0%BD%D1%8B-%D1%81-%D0%B3%D0%BE%D1%80%D1%8F%D1%87%D0%B8%D0%BC-%D0%BF%D0%B8%D0%B2%D0%BE%D0%BC/* /opyt/spa 301  # Ванны-с-горячим-пивом
+/index.php/%D0%AD%D0%BA%D1%81%D0%BA%D1%83%D1%80%D1%81%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0/* /opyt 301  # Экскурсионная-программа
+/index.php/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%BF%D0%B8%D0%B2%D0%BE%D0%B2%D0%B0%D1%80%D0%BE%D0%B2/* /soyuz-pivovarov 301  # Союз-пивоваров
+
+# --- Одиночные страницы донора ---
+/index.php/vakansiya.html /o-kompanii/vakansii 301
+/index.php/phone.html /kontakty 301
+/index.php/zip-technologies.html /o-kompanii/pivovarnya 301
+
+# --- Всё остальное из index.php ---
+/index.php/* /blog 301
+/index.php / 301

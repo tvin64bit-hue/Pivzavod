@@ -1,0 +1,114 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import { outlets } from '../../data/content';
+---
+
+<BaseLayout
+  title="Осторожно, подделки"
+  description="Пиво «Лаборатории живого пива» продаётся только через собственные точки в Челябинске. Как отличить подделку и куда сообщить, если её предлагают."
+>
+  <PageHeader
+    label="Где наше пиво"
+    title="Осторожно, подделки"
+    lead="Мы реализуем наше пиво только через точки, перечисленные на этом сайте."
+    crumbs={[{ label: 'Где наше пиво', href: '/gde-kupit' }, { label: 'Осторожно, подделки' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="warn">
+        <div class="warn__text">
+          <p class="label">Что важно знать</p>
+          <p>
+            Если вам предлагают купить пиво «Лаборатории живого пива» или
+            «Лаборатории авторского пива» где-то ещё — это подделка.
+            Мы не работаем с перекупщиками, не отгружаем пиво на рынки
+            и не разливаем его под чужой вывеской.
+          </p>
+          <p>
+            Заметили такое — сфотографируйте чек и этикетку и сообщите нам.
+            Мы разберёмся и ответим, что выяснили.
+          </p>
+          <a class="btn btn--primary" href="#soobshit">Сообщить о подделке</a>
+        </div>
+
+        <div class="warn__list">
+          <h2 class="warn__list-title">Настоящие точки — только эти</h2>
+          <ul>
+            {outlets.map((o) => (
+              <li>
+                <span class="warn__outlet">{o.name}</span>
+                <span class="caption">{o.address}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="caption warn__link">
+            <a href="/gde-kupit/tochki-prodazh">Адреса, часы работы и телефоны →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <LeadForm
+        id="soobshit"
+        topic="other"
+        title="Сообщить о подделке"
+        description="Напишите, где именно предлагали пиво, и приложите номер чека в комментарии — мы разберёмся."
+        source="Осторожно, подделки"
+        commentLabel="Что произошло"
+        commentPlaceholder="Где и когда предлагали, что было на этикетке, номер чека — если сохранился"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .warn {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-16);
+    align-items: start;
+  }
+  .warn__text p { max-width: 52ch; margin-bottom: var(--s-8); }
+
+  .warn__list {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: var(--s-8);
+  }
+  .warn__list-title {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+    margin-bottom: var(--s-6);
+  }
+  .warn__list ul { list-style: none; margin: 0; padding: 0; }
+  .warn__list li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-3) 0;
+    border-bottom: 1px dashed var(--c-border);
+    margin: 0;
+  }
+  .warn__list li:last-child { border-bottom: 0; }
+  .warn__outlet { font-size: 15px; font-weight: 500; }
+  .warn__link { margin-top: var(--s-6); }
+  .warn__link a { text-decoration: none; }
+
+  @media (max-width: 1023px) { .warn { gap: var(--s-8); } }
+  @media (max-width: 767px) {
+    .warn { grid-template-columns: minmax(0, 1fr); }
+    .warn__list { padding: var(--s-6); }
+    .warn__text .btn { width: 100%; }
+  }
+</style>

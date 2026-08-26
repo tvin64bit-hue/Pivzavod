@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import { leadership } from '../../data/content';
+
+const director = leadership.find((p) => p.lead)!;
+const brewers = leadership.filter((p) => !p.lead);
+---
+
+<BaseLayout
+  title="Руководство"
+  description="Директор и пивовары «Лаборатории живого пива»: Ройтенберг И.А., Руднев Л.Б., Лазарев В.В., Старостин Н.А., Книжников В.С. Награды и специализация."
+>
+  <PageHeader
+    label="О компании"
+    title="Руководство"
+    lead="Дипломированные дегустаторы, мастера-биотехнологи и отличники качества — люди, чьи фамилии стоят за каждой варкой."
+    crumbs={[{ label: 'О компании', href: '/o-kompanii' }, { label: 'Руководство' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <!-- Директор — карточка на всю ширину сверху (раздел 4.2.2) -->
+      <article class="person person--lead card">
+        <div class="person__photo">
+          <LegacyImage src={director.photo} alt={director.name} ratio="1 / 1" loading="eager" />
+        </div>
+        <div class="person__body">
+          <p class="label">{director.role}</p>
+          <h2>{director.name}</h2>
+          <p>{director.bio}</p>
+          <div class="person__awards">
+            <h3 class="person__awards-title">Награды</h3>
+            <ul>
+              {director.awards.map((a) => <li>{a}</li>)}
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- Остальные — сетка 2×2 на десктопе, стек на мобильном -->
+      <div class="people">
+        {brewers.map((person) => (
+          <article class="person card">
+            <div class="person__photo">
+              <LegacyImage src={person.photo} alt={person.name} ratio="1 / 1" />
+            </div>
+            <div class="person__body">
+              <p class="label">{person.role}</p>
+              <h2>{person.name}</h2>
+              <p>{person.bio}</p>
+              <div class="person__awards">
+                <h3 class="person__awards-title">Награды</h3>
+                <ul>
+                  {person.awards.map((a) => <li>{a}</li>)}
+                </ul>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .person {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: var(--s-8);
+    align-items: start;
+  }
+  .person--lead {
+    grid-template-columns: 300px 1fr;
+    margin-bottom: var(--s-8);
+  }
+  .person h2 {
+    font-size: 24px;
+    line-height: 32px;
+    margin-bottom: var(--s-4);
+  }
+  .person--lead h2 { font-size: 32px; line-height: 40px; }
+  .person__photo { border-radius: var(--r-md); overflow: hidden; }
+
+  .person__awards { margin-top: var(--s-6); }
+  .person__awards-title {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+    margin-bottom: var(--s-3);
+  }
+  .person__awards ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .person__awards li {
+    position: relative;
+    padding-left: var(--s-6);
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--c-muted);
+    margin-bottom: var(--s-2);
+  }
+  .person__awards li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 8px;
+    height: 1px;
+    background: var(--c-ochre);
+  }
+
+  .people {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-6);
+    margin-bottom: var(--s-12);
+  }
+
+  @media (max-width: 1023px) {
+    .person--lead { grid-template-columns: 220px 1fr; }
+    .person--lead h2 { font-size: 28px; line-height: 36px; }
+  }
+  @media (max-width: 767px) {
+    .person, .person--lead { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
+    .person__photo { max-width: 220px; }
+    .people { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

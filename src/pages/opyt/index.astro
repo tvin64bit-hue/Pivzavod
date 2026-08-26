@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+---
+
+<BaseLayout
+  title="Впечатления"
+  description="Дегустационный зал на Карпинского, 62, пивные SPA-процедуры и пивная на Кирова — где попробовать пиво «Лаборатории живого пива» в Челябинске."
+>
+  <PageHeader
+    label="Впечатления"
+    title="Пиво как опыт, а не только как покупка"
+    lead="Наше пиво — это ещё и опыт: приходите продегустировать в фирменном зале или попробовать необычные SPA-процедуры на пивной основе."
+    crumbs={[{ label: 'Впечатления' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--2">
+        <a class="card exp" href="/opyt/degustacionny-zal">
+          <div class="card__media">
+            <LegacyImage src="zdanie.jpg" alt="Здание на Карпинского, 62 — дегустационный зал на 3 этаже" ratio="16 / 10" loading="eager" />
+          </div>
+          <p class="label">Карпинского, 62 · 3 этаж</p>
+          <h2>Дегустационный зал</h2>
+          <p class="caption">
+            Приглашаем гостей попробовать наше пиво в фирменном зале — с меню,
+            рассказом о производстве и без спешки.
+          </p>
+        </a>
+
+        <a class="card exp" href="/opyt/spa">
+          <div class="card__media">
+            <!-- Фотографий процедуры у нас пока нет, поэтому рисунок в стиле сайта -->
+            <div class="exp__stub" aria-hidden="true">
+              <svg viewBox="0 0 400 250" class="exp__art">
+                <g fill="none" stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                  <!-- Ванна -->
+                  <path d="M64 138h272v18a58 58 0 0 1-58 58H122a58 58 0 0 1-58-58z" />
+                  <path d="M96 214v14M304 214v14" />
+                  <!-- Смеситель -->
+                  <path d="M112 138v-38a24 24 0 0 1 24-24h26" />
+                  <path d="M162 62v28" stroke-width="3" />
+                  <!-- Пар -->
+                  <path d="M182 104c10-12-10-22 0-34M222 100c10-12-10-24 0-36M262 106c10-12-10-22 0-34"
+                        opacity="0.6" />
+                  <!-- Кружка на бортике -->
+                  <path d="M300 96h44v34a10 10 0 0 1-10 10h-24a10 10 0 0 1-10-10z" />
+                  <path d="M344 104h12a10 10 0 0 1 0 20h-12" />
+                  <path d="M300 110h44" opacity="0.6" />
+                </g>
+              </svg>
+            </div>
+          </div>
+          <p class="label">Уникальное предложение</p>
+          <h2>Пивные SPA-процедуры</h2>
+          <p class="caption">
+            Тёплая ванна с добавлением горячего пива. Звучит странно — попробуйте,
+            прежде чем спорить.
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="pivnaya card">
+        <div class="pivnaya__media">
+          <LegacyImage src="0210.jpg" alt="Пивная на Кирова, 104" ratio="4 / 3" />
+        </div>
+        <div class="pivnaya__body">
+          <p class="label">Ещё одно место</p>
+          <h2>Пивная на Кирова</h2>
+          <p>
+            По адресу ул. Кирова, 104 (со стороны ул. Коммуны, рядом с «Молодёжная
+            мода») работает пивная, где продаётся продукция пивоварен «Лаборатория
+            живого пива» и «Лаборатория авторского пива».
+          </p>
+          <a class="btn btn--secondary" href="/opyt/pivnaya-na-kirova">Подробнее</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .exp h2 {
+    font-size: 26px;
+    line-height: 34px;
+    margin-bottom: var(--s-3);
+  }
+  .exp__stub {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--c-ochre);
+    background:
+      radial-gradient(70% 70% at 30% 25%, rgba(244, 169, 59, 0.22), transparent 65%),
+      linear-gradient(135deg, #241A15, #3A2C22);
+  }
+  .exp__art { width: 62%; max-width: 320px; height: auto; opacity: 0.85; }
+
+  .pivnaya {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-8);
+    align-items: center;
+  }
+  .pivnaya h2 { font-size: 28px; line-height: 36px; margin-bottom: var(--s-4); }
+  .pivnaya__body p { max-width: 54ch; margin-bottom: var(--s-6); }
+
+  @media (max-width: 767px) {
+    .pivnaya { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
+    .pivnaya__body .btn { width: 100%; }
+  }
+</style>

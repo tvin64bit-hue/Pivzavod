@@ -1,0 +1,118 @@
+---
+/**
+ * Возрастной дисклеймер 18+ — раздел 4 «Сквозные компоненты».
+ * Показывается при первом визите, решение хранится 30 дней.
+ * При «Нет» — экран без доступа к сайту.
+ */
+---
+
+<div class="agegate" id="agegate" hidden data-agegate>
+  <div class="agegate__box" role="dialog" aria-modal="true" aria-labelledby="agegate-title">
+    <p class="label">Проверка возраста</p>
+    <h2 id="agegate-title">Сайт содержит информацию об алкогольной продукции. Вам есть 18 лет?</h2>
+    <div class="btn-row agegate__actions">
+      <button type="button" class="btn btn--primary" data-age-yes>Да, мне есть 18</button>
+      <button type="button" class="btn btn--secondary" data-age-no>Нет</button>
+    </div>
+  </div>
+
+  <div class="agegate__box agegate__box--denied" hidden data-age-denied>
+    <p class="label">Доступ закрыт</p>
+    <h2>Извините, сайт доступен только совершеннолетним</h2>
+    <p class="caption">
+      Мы не можем показать вам содержимое сайта. Спасибо за честность — возвращайтесь,
+      когда вам исполнится 18 лет.
+    </p>
+  </div>
+</div>
+
+<style>
+  .agegate {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-agegate);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--gutter);
+    background: rgba(28, 20, 16, 0.97);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .agegate[hidden] { display: none; }
+
+  .agegate__box {
+    width: 100%;
+    max-width: 560px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: var(--s-12);
+    text-align: center;
+  }
+  .agegate__box[hidden] { display: none; }
+  .agegate__box h2 {
+    font-size: 28px;
+    line-height: 36px;
+    margin-bottom: var(--s-8);
+  }
+  .agegate__actions { justify-content: center; }
+
+  @media (max-width: 767px) {
+    .agegate__box { padding: var(--s-8) var(--s-6); }
+    .agegate__box h2 { font-size: 22px; line-height: 30px; }
+    .agegate__actions { flex-direction: column; }
+    .agegate__actions .btn { width: 100%; }
+  }
+</style>
+
+<script>
+  const KEY = 'pz74:age-confirmed';
+  const TTL_DAYS = 30;
+  const TTL_MS = TTL_DAYS * 24 * 60 * 60 * 1000;
+
+  const gate = document.querySelector<HTMLElement>('[data-agegate]');
+  if (gate) {
+    const ask = gate.querySelector<HTMLElement>('.agegate__box:not([data-age-denied])');
+    const denied = gate.querySelector<HTMLElement>('[data-age-denied]');
+    const yes = gate.querySelector<HTMLButtonElement>('[data-age-yes]');
+    const no = gate.querySelector<HTMLButtonElement>('[data-age-no]');
+
+    // localStorage может быть недоступен (приватный режим, блокировка site data) —
+    // в этом случае просто показываем модалку каждый раз.
+    const readConfirmedAt = (): number | null => {
+      try {
+        const raw = window.localStorage.getItem(KEY);
+        if (!raw) return null;
+        const ts = Number(raw);
+        return Number.isFinite(ts) ? ts : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const confirmedAt = readConfirmedAt();
+    const stillValid = confirmedAt !== null && Date.now() - confirmedAt < TTL_MS;
+
+    if (!stillValid) {
+      gate.hidden = false;
+      document.body.classList.add('is-locked');
+      yes?.focus();
+    }
+
+    yes?.addEventListener('click', () => {
+      try {
+        window.localStorage.setItem(KEY, String(Date.now()));
+      } catch {
+        /* хранилище недоступно — спросим при следующем визите */
+      }
+      gate.hidden = true;
+      document.body.classList.remove('is-locked');
+    });
+
+    no?.addEventListener('click', () => {
+      if (ask) ask.hidden = true;
+      if (denied) denied.hidden = false;
+    });
+  }
+</script>

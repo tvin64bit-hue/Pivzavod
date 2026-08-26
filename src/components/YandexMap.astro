@@ -1,0 +1,88 @@
+---
+/**
+ * Интерактивная карта. Яндекс.Карты через iframe-виджет — без API-ключа
+ * (раздел 7 ТЗ). Метка ставится геокодером Яндекса по адресу, поэтому
+ * координаты в коде не хранятся и не могут разойтись с реальностью.
+ *
+ * Для карты с несколькими метками сразу заказчик собирает её в конструкторе
+ * (yandex.ru/map-constructor) и кладёт ссылку в `maps` в src/data/site.ts —
+ * тогда `constructorUrl` перекрывает поиск по адресу. Инструкция — в README.
+ */
+interface Props {
+  /** Готовая ссылка из конструктора Яндекс.Карт (приоритетнее адреса) */
+  constructorUrl?: string | null;
+  /** Адрес для поиска, например «Челябинск, улица Карпинского, 62» */
+  query?: string;
+  zoom?: number;
+  title: string;
+  height?: number;
+}
+
+const { constructorUrl, query, zoom = 17, title, height = 460 } = Astro.props;
+
+/**
+ * Конструктор карт отдаёт ссылку в двух видах: «поделиться» (yandex.ru/maps/?um=…)
+ * и код для вставки (yandex.ru/map-widget/v1/?um=…). В iframe работает только
+ * второй, поэтому первый приводим к нему сами — чтобы заказчику было всё равно,
+ * какую из двух он скопировал.
+ */
+function toWidgetUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.startsWith('/map-widget/')) return url;
+    const um = parsed.searchParams.get('um');
+    if (!um) return url;
+    return `https://yandex.ru/map-widget/v1/?um=${encodeURIComponent(um)}&source=constructor`;
+  } catch {
+    return url;
+  }
+}
+
+const src = constructorUrl
+  ? toWidgetUrl(constructorUrl)
+  : `https://yandex.ru/map-widget/v1/?mode=search&text=${encodeURIComponent(query ?? '')}&z=${zoom}`;
+
+/** Виджет режут блокировщики рекламы, поэтому рядом даём обычную ссылку */
+const fallbackUrl = constructorUrl || `https://yandex.ru/maps/?text=${encodeURIComponent(query ?? '')}`;
+---
+
+<div class="map" style={`--map-h:${height}px`}>
+  <iframe
+    src={src}
+    title={title}
+    width="100%"
+    height={height}
+    loading="lazy"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<p class="map__link caption">
+  <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+    Открыть в Яндекс.Картах ↗
+  </a>
+</p>
+
+<style>
+  .map {
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--c-surface);
+    line-height: 0;
+  }
+  .map iframe {
+    display: block;
+    width: 100%;
+    height: var(--map-h);
+    border: 0;
+    /* Если виджет не загрузился, на его месте остаётся фон в тон сайту,
+       а не белый прямоугольник */
+    background: var(--c-surface);
+  }
+
+  .map__link { margin: var(--s-3) 0 0; }
+  @media (max-width: 767px) {
+    .map iframe { height: 340px; }
+  }
+</style>

@@ -1,0 +1,254 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, type CategoryKey } from '../../content.config';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+/** Сколько записей в каждой категории — пустые фильтры не показываем */
+const counts = posts.reduce<Record<string, number>>((acc, post) => {
+  acc[post.data.category] = (acc[post.data.category] ?? 0) + 1;
+  return acc;
+}, {});
+
+const filters = (Object.keys(CATEGORIES) as CategoryKey[])
+  .filter((key) => counts[key])
+  .map((key) => ({ key, label: CATEGORIES[key], count: counts[key] }));
+
+/** Сколько записей показываем сразу — остальные раскрываются кнопкой */
+const PAGE_SIZE = 24;
+
+const dateFmt = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+---
+
+<BaseLayout
+  title="Блог"
+  description="Новости «Лаборатории живого пива»: награды, пресса о нас, дегустации, командировки и обучение, позиция отрасли. Архив публикаций с 2011 года."
+>
+  <PageHeader
+    label="Блог"
+    title="Что у нас происходит"
+    lead="Награды, дегустации, поездки на конференции и позиция по отраслевым вопросам — с 2011 года и до сегодня."
+    crumbs={[{ label: 'Блог' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <!-- Фильтр по 6 категориям (раздел 4.6). Работает без перезагрузки. -->
+      <div class="filters" role="group" aria-label="Фильтр по категориям">
+        <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">
+          Все <span class="filter__count">{posts.length}</span>
+        </button>
+        {filters.map((f) => (
+          <button type="button" class="filter" data-filter={f.key} aria-pressed="false">
+            {f.label} <span class="filter__count">{f.count}</span>
+          </button>
+        ))}
+      </div>
+
+      <div class="feed" data-feed>
+        {posts.map((post, i) => (
+          <article class="post" data-category={post.data.category} hidden={i >= PAGE_SIZE}>
+            <a class="card post__card" href={`/blog/${post.id}`}>
+              <div class="card__media">
+                {post.data.cover ? (
+                  <LegacyImage src={post.data.cover} alt={post.data.title} ratio="16 / 10" />
+                ) : (
+                  <div class="post__stub" aria-hidden="true"></div>
+                )}
+              </div>
+              <div class="post__meta">
+                <span class="tag">{CATEGORIES[post.data.category]}</span>
+                <time class="mono post__date" datetime={post.data.date.toISOString()}>
+                  {post.data.dateApproximate
+                    ? `${post.data.date.getFullYear()} г.`
+                    : dateFmt.format(post.data.date)}
+                </time>
+              </div>
+              <h2 class="post__title">{post.data.title}</h2>
+              <p class="caption">{post.data.excerpt}</p>
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <p class="feed__empty" data-empty hidden>В этой категории пока нет записей.</p>
+
+      {posts.length > PAGE_SIZE && (
+        <div class="feed__more">
+          <button type="button" class="btn btn--secondary" data-more>
+            Показать ещё {Math.min(PAGE_SIZE, posts.length - PAGE_SIZE)}
+          </button>
+        </div>
+      )}
+
+      <noscript>
+        <style>
+          .post[hidden] { display: block; }
+          .feed__more { display: none; }
+        </style>
+      </noscript>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-bottom: var(--s-12);
+  }
+  .filter {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 9px var(--s-4);
+    background: transparent;
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    color: var(--c-muted);
+    font-family: var(--f-body);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color var(--t-fast), color var(--t-fast), background-color var(--t-fast);
+  }
+  .filter:hover { border-color: var(--c-accent); color: var(--c-text); }
+  .filter.is-active {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: var(--c-bg);
+    font-weight: 600;
+  }
+  .filter__count {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  .feed {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+  }
+  .post { margin: 0; }
+  .post[hidden] { display: none; }
+  .post__card { height: 100%; display: flex; flex-direction: column; }
+  .post__stub {
+    height: 100%;
+    background: linear-gradient(135deg, #241A15, #3A2C22);
+  }
+  .post__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-bottom: var(--s-4);
+  }
+  .post__date { font-size: 12px; color: var(--c-muted); }
+  .post__title {
+    font-size: 20px;
+    line-height: 28px;
+    margin-bottom: var(--s-3);
+  }
+
+  .feed__empty {
+    color: var(--c-muted);
+    padding: var(--s-12) 0;
+    text-align: center;
+  }
+  .feed__empty[hidden] { display: none; }
+
+  .feed__more {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--s-12);
+  }
+  .feed__more[hidden] { display: none; }
+
+  .feed__note { margin-top: var(--s-12); }
+  .feed__note code { font-family: var(--f-mono); font-size: 12px; color: var(--c-accent); }
+
+  @media (max-width: 1023px) {
+    .feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 767px) {
+    .feed { grid-template-columns: minmax(0, 1fr); }
+    .filters { margin-bottom: var(--s-8); }
+  }
+</style>
+
+<script>
+  const PAGE_SIZE = 24;
+
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+  const posts = Array.from(document.querySelectorAll<HTMLElement>('[data-feed] > .post'));
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  const more = document.querySelector<HTMLButtonElement>('[data-more]');
+  const moreBox = more?.parentElement ?? null;
+
+  let currentKey = 'all';
+  let limit = PAGE_SIZE;
+
+  /** Показываем записи выбранной категории, но не больше текущего лимита */
+  const render = () => {
+    let matched = 0;
+    posts.forEach((post) => {
+      const match = currentKey === 'all' || post.dataset.category === currentKey;
+      post.hidden = !(match && matched < limit);
+      if (match) matched += 1;
+    });
+
+    if (empty) empty.hidden = matched > 0;
+    if (more && moreBox) {
+      const rest = matched - limit;
+      moreBox.hidden = rest <= 0;
+      more.textContent = `Показать ещё ${Math.min(rest, PAGE_SIZE)}`;
+    }
+  };
+
+  const apply = (key: string) => {
+    currentKey = key;
+    limit = PAGE_SIZE;
+    render();
+
+    buttons.forEach((btn) => {
+      const active = btn.dataset.filter === key;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+
+    // Категория живёт в URL, чтобы ссылкой на фильтр можно было поделиться
+    const url = new URL(window.location.href);
+    if (key === 'all') url.searchParams.delete('kategoriya');
+    else url.searchParams.set('kategoriya', key);
+    history.replaceState(null, '', url);
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => apply(btn.dataset.filter ?? 'all'));
+  });
+
+  more?.addEventListener('click', () => {
+    // Первая из добавленных карточек принимает фокус — с клавиатуры не теряемся
+    const firstNew = posts.filter((p) => !p.hidden).length;
+    limit += PAGE_SIZE;
+    render();
+    const target = posts.filter((p) => !p.hidden)[firstNew];
+    target?.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
+  });
+
+  const initial = new URL(window.location.href).searchParams.get('kategoriya');
+  if (initial && buttons.some((b) => b.dataset.filter === initial)) apply(initial);
+  else render();
+</script>

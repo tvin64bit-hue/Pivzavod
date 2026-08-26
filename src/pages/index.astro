@@ -1,0 +1,434 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TubeCard from '../components/TubeCard.astro';
+import LegacyImage from '../components/LegacyImage.astro';
+import { getCollection } from 'astro:content';
+import { awards } from '../data/content';
+import { site } from '../data/site';
+
+/**
+ * Награда → запись в Блоге (раздел 4.1 «Награды-карусель»).
+ * Слаг сверяется с коллекцией на сборке: записи архива переименовывались при
+ * миграции, и ссылки на карточках молча повисали. Теперь сборка падает сразу.
+ */
+const posts = new Set((await getCollection('blog')).map((p) => p.id));
+for (const award of awards) {
+  if (!posts.has(award.post)) {
+    throw new Error(
+      `Карточка награды «${award.title}» ссылается на запись «${award.post}», ` +
+        'которой нет в блоге. Проверьте поле post в src/data/content.ts.',
+    );
+  }
+}
+---
+
+<BaseLayout
+  title="Лаборатория живого пива — крафтовая пивоварня в Челябинске"
+  bareTitle
+  description="Варим честное нефильтрованное пиво в Челябинске с 2011 года. Дегустационный зал, розничные точки и оптовые поставки. 11 золотых медалей «Золотой осени»."
+  preloadImage="/images/hero-brewery.webp"
+>
+  <!-- Hero -->
+  <section class="hero grain">
+
+    <div class="container hero__inner">
+
+      <div class="hero__main">
+        <p class="label">{site.tagline}</p>
+        <h1>Лаборатория живого пива</h1>
+        <p class="hero__sub">
+          Варим честное нефильтрованное пиво в Челябинске — и открываем двери каждому,
+          кто хочет попробовать.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/opyt">Где попробовать</a>
+          <a class="btn btn--secondary" href="/gde-kupit">Где купить</a>
+        </div>
+      </div>
+
+      <!-- Цифры вместо пустоты: то же, чем страница и так гордится ниже,
+           но видно сразу, без скролла -->
+      <dl class="hero__facts">
+        <div class="hero__fact">
+          <dt>Лет варим</dt>
+          <dd>с 2011</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Золотых медалей</dt>
+          <dd>11</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Точек продаж</dt>
+          <dd>6</dd>
+        </div>
+        <div class="hero__fact">
+          <dt>Фильтрация</dt>
+          <dd>нет</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- О культуре потребления -->
+  <section class="section">
+    <div class="container culture">
+      <div class="culture__text">
+        <p class="label">Культура потребления</p>
+        <h2>Живой продукт требует бережного обращения</h2>
+        <p>
+          Мы стремимся формировать культуру ответственного потребления пива, которая
+          не противоречит здоровому образу жизни и исключает риски чрезмерного
+          употребления. Наш продукт живой и требует бережного обращения — только при
+          правильном хранении и умеренном употреблении вы раскроете всю прелесть
+          этого напитка.
+        </p>
+        <a class="btn btn--secondary" href="/o-kompanii">О компании</a>
+      </div>
+      <div class="culture__media">
+        <LegacyImage src="02_2.jpg" alt="Дегустация живого пива в фирменном зале" ratio="4 / 3" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Награды-карусель -->
+  <section class="section section--tight awards-sec">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Награды</p>
+        <h2>Нас проверяли жюри, а не только собственный вкус</h2>
+        <p class="lead">
+          <span class="hint-hover">Наведите на карточку</span><span class="hint-tap"
+            >Коснитесь карточки</span> — на обороте лабораторная этикетка награды.
+        </p>
+      </div>
+
+      <div class="awards" data-awards>
+        {awards.map((award) => (
+          <TubeCard
+            title={award.title}
+            subtitle={award.summary}
+            photo={award.cover}
+            specs={award.specs}
+            href={`/blog/${award.post}`}
+            hrefLabel="Читать в блоге"
+          />
+        ))}
+      </div>
+
+      <!--
+        Подсказка про смахивание. Видна только на телефоне, где сетка
+        превращается в ленту, и прячется, как только ленту тронули.
+        aria-hidden: для чтения с экрана это шум, карточки и так по порядку.
+      -->
+      <p class="swipe" data-swipe aria-hidden="true">
+        <span class="swipe__label mono">Листайте</span>
+        <svg class="swipe__arrow" viewBox="0 0 48 12" width="48" height="12" fill="none"
+             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 6h40" />
+          <path d="M36 2l6 4-6 4" />
+        </svg>
+      </p>
+
+      <p class="awards__more">
+        <a href="/o-kompanii/nagrady">Все награды пивоварни →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Быстрые входы в разделы -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="grid grid--3">
+        <a class="card" href="/opyt/degustacionny-zal">
+          <p class="label">Впечатления</p>
+          <h3>Дегустационный зал</h3>
+          <p class="caption">
+            ул. Карпинского, 62, 3 этаж. Приходите пробовать — с экскурсией по производству.
+          </p>
+        </a>
+        <a class="card" href="/gde-kupit/tochki-prodazh">
+          <p class="label">Розница</p>
+          <h3>Шесть точек продаж</h3>
+          <p class="caption">
+            Только собственные точки в Челябинске. Через посредников мы не продаём.
+          </p>
+        </a>
+        <a class="card" href="/gde-kupit/opt">
+          <p class="label">Опт</p>
+          <h3>Оптовым покупателям</h3>
+          <p class="caption">
+            Еврокеги 30 л, фитинг типа «А». Прайс от 10 000 л в месяц.
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    /* Подложка на случай, если фотография ещё не загрузилась */
+    background: linear-gradient(135deg, #2B211B, #1C1410 70%);
+    isolation: isolate;
+  }
+
+  /*
+   * Фотография и затемнение — одним слоем ::before.
+   *
+   * Отдельный ::after под затемнение не годится: у .hero есть класс grain,
+   * а глобальное правило .grain::after задаёт opacity 0.07 и mix-blend-mode
+   * overlay. Затемнение унаследовало бы их и стало прозрачным на 93% —
+   * светлый текст тонул в кружках и бликах меди.
+   * Слои перечислены сверху вниз: сначала затемнение, потом снимок.
+   */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(
+        100deg,
+        rgba(18, 12, 9, 0.95) 0%,
+        rgba(18, 12, 9, 0.9) 46%,
+        rgba(18, 12, 9, 0.74) 76%,
+        rgba(18, 12, 9, 0.66) 100%
+      ),
+      linear-gradient(180deg, rgba(18, 12, 9, 0.82) 0%, transparent 26%),
+      linear-gradient(0deg, rgba(18, 12, 9, 0.92) 0%, transparent 32%),
+      radial-gradient(76% 64% at 78% 32%, rgba(244, 169, 59, 0.16), transparent 66%),
+      image-set(
+        url('/images/hero-brewery.webp') type('image/webp'),
+        url('/images/hero-brewery.jpg') type('image/jpeg')
+      );
+    background-size: auto, auto, auto, auto, cover;
+    background-position: center, center, center, center, center 62%;
+    background-repeat: no-repeat;
+  }
+
+  /* Затемнение поверх фотографии. Сплошная подложка плюс усиление слева,
+     где текст, и снизу, где полоса фактов: на кружках и подсветке медных
+     котлов светлый текст иначе не читается. */
+
+  @media (max-width: 767px) {
+    /* Текст занимает всю ширину — затемняем равномерно, без бокового уклона */
+    .hero::before {
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(18, 12, 9, 0.9) 0%,
+          rgba(18, 12, 9, 0.82) 50%,
+          rgba(18, 12, 9, 0.94) 100%
+        ),
+        radial-gradient(90% 50% at 60% 30%, rgba(244, 169, 59, 0.14), transparent 70%),
+        image-set(
+          url('/images/hero-brewery.webp') type('image/webp'),
+          url('/images/hero-brewery.jpg') type('image/jpeg')
+        );
+      background-size: auto, auto, cover;
+      background-position: center, center, center 55%;
+    }
+  }
+  .hero__inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-block: var(--s-16);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-16);
+  }
+  .hero__main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+
+
+  @media (max-width: 1023px) {
+    .hero__main { max-width: 84%; }
+  }
+  @media (max-width: 767px) {
+    .hero__main { max-width: 100%; }
+  }
+
+
+  /* Полоса фактов прижата к низу экрана — она же подсказывает, что ниже есть
+     ещё содержимое */
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-6);
+    margin: 0;
+    padding-top: var(--s-8);
+    border-top: 1px solid var(--c-border);
+  }
+  .hero__fact dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    margin-bottom: var(--s-2);
+  }
+  .hero__fact dd {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 600;
+    color: var(--c-accent);
+  }
+  .hero h1 { max-width: 16ch; }
+  .hero__sub {
+    font-size: 21px;
+    line-height: 32px;
+    color: var(--c-muted);
+    max-width: 54ch;
+    margin-bottom: var(--s-12);
+  }
+
+  @media (max-width: 1023px) { .hero { min-height: 90vh; } }
+  @media (max-width: 1023px) {
+    .hero__facts { gap: var(--s-4); }
+    .hero__fact dd { font-size: 24px; }
+  }
+  @media (max-width: 767px) {
+    .hero { min-height: 80vh; }
+    .hero__inner { gap: var(--s-8); padding-block: var(--s-12); }
+    .hero__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4); }
+    .hero__fact dd { font-size: 22px; }
+    .hero__sub { font-size: 17px; line-height: 27px; margin-bottom: var(--s-8); }
+    .hero .btn-row .btn { width: 100%; }
+  }
+
+  .culture {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .culture__text p:not(.label) { margin-bottom: var(--s-8); max-width: 56ch; }
+  @media (max-width: 1023px) { .culture { gap: var(--s-8); } }
+  @media (max-width: 767px) {
+    .culture { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+    .culture__media { order: -1; }
+  }
+
+  .awards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+  }
+  /*
+    Подсказка «листайте» — в духе размерной линии с чертежа: тонкий штрих
+    со стрелкой и мелкая подпись моноширинным. На широких экранах лента
+    не нужна, поэтому и подсказки нет.
+  */
+  .swipe { display: none; }
+  @media (max-width: 767px) {
+    .swipe {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--s-3);
+      margin: var(--s-3) 0 0;
+      transition: opacity var(--t-fast), visibility var(--t-fast);
+    }
+    /* Охра на тёмном фоне даёт всего 3.15:1 — для подписи в 11 пикселей
+       это ниже нормы, и подсказку просто не замечают. Текст берём
+       приглушённый, стрелку — акцентный: она и должна ловить взгляд */
+    .swipe__label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--c-muted);
+    }
+    .swipe__arrow {
+      color: var(--c-accent);
+      animation: swipe-nudge 2.4s ease-in-out infinite;
+    }
+    /* Ленту тронули — подсказка сделала своё дело */
+    .swipe.is-done { opacity: 0; visibility: hidden; }
+  }
+
+  @keyframes swipe-nudge {
+    0%, 60%, 100% { transform: translateX(0); }
+    30% { transform: translateX(6px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .swipe__arrow { animation: none; }
+  }
+
+  /* На телефоне наводить нечем — там карточка переворачивается по касанию */
+  .hint-tap { display: none; }
+  @media (hover: none) {
+    .hint-hover { display: none; }
+    .hint-tap { display: inline; }
+  }
+
+  .awards__more {
+    margin-top: var(--s-8);
+    font-weight: 600;
+  }
+  .awards__more a { text-decoration: none; }
+
+  /*
+    Карточки приходят из TubeCard, а у него своя область видимости стилей.
+    Astro дописывает свой признак к последнему элементу селектора, поэтому
+    правило вида «.awards > *» получает признак этой страницы и до чужой
+    карточки не достаёт. Нужен :global на той части, что указывает на неё.
+  */
+
+  /* Планшет — сетка 2+1 */
+  @media (max-width: 1023px) and (min-width: 768px) {
+    .awards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .awards > :global(.tube):last-child { grid-column: 1 / -1; }
+  }
+
+  /* Мобильный — горизонтальный свайп вместо сетки (раздел 5) */
+  @media (max-width: 767px) {
+    .awards {
+      display: flex;
+      gap: var(--s-4);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      /* Карточки должны доезжать до края экрана */
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      padding-bottom: var(--s-4);
+      scrollbar-width: none;
+    }
+    .awards::-webkit-scrollbar { display: none; }
+    .awards > :global(.tube) {
+      flex: 0 0 82%;
+      scroll-snap-align: center;
+    }
+  }
+</style>
+
+<script>
+  /* Подсказка «листайте» исчезает, как только ленту наград тронули */
+  const awardsStrip = document.querySelector<HTMLElement>('[data-awards]');
+  const swipeHint = document.querySelector<HTMLElement>('[data-swipe]');
+
+  if (awardsStrip && swipeHint) {
+    const onScroll = () => {
+      if (awardsStrip.scrollLeft > 12) done();
+    };
+    const done = () => {
+      swipeHint.classList.add('is-done');
+      awardsStrip.removeEventListener('scroll', onScroll);
+    };
+
+    awardsStrip.addEventListener('scroll', onScroll, { passive: true });
+
+    // Листать нечего — например, экран широкий и лента не появилась.
+    // Подсказка в таком случае не должна висеть вечно.
+    if (awardsStrip.scrollWidth <= awardsStrip.clientWidth + 1) done();
+  }
+</script>

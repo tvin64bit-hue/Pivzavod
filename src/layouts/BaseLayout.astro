@@ -1,0 +1,114 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AgeGate from '../components/AgeGate.astro';
+import { site, contacts } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Не добавлять суффикс с названием компании (для главной) */
+  bareTitle?: boolean;
+  ogImage?: string;
+  /** Дополнительный JSON-LD для страницы */
+  schema?: Record<string, unknown>;
+  noindex?: boolean;
+  /**
+   * Изображение, которое занимает первый экран. Фон подключён через CSS,
+   * поэтому браузер узнаёт о нём только после разбора стилей — предзагрузка
+   * убирает эту задержку с самого заметного элемента страницы.
+   */
+  preloadImage?: string;
+}
+
+const {
+  title,
+  description,
+  bareTitle = false,
+  /**
+   * Превью для соцсетей. Только растр: SVG в og:image не показывают
+   * ни мессенджеры, ни VK — ссылка уходила бы без картинки.
+   */
+  ogImage = '/og-default.jpg',
+  schema,
+  noindex = false,
+  preloadImage,
+} = Astro.props;
+
+const fullTitle = bareTitle ? title : `${title} — ${site.name}`;
+const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', Astro.site).href;
+const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Brewery',
+  name: site.legalName,
+  alternateName: site.name,
+  url: Astro.site?.href,
+  description:
+    'Крафтовая пивоварня в Челябинске: живое нефильтрованное пиво, дегустационный зал, розничные и оптовые продажи.',
+  foundingDate: String(site.foundedYear),
+  telephone: contacts.officePhone.label,
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'RU',
+    addressLocality: 'Челябинск',
+    postalCode: contacts.postalCode,
+    streetAddress: contacts.street,
+  },
+};
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#1C1410" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {preloadImage && (
+      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
+    )}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+    />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+    {schema && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+    <AgeGate />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

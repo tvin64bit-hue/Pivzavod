@@ -1,0 +1,19 @@
+# Заголовки и правила кэширования.
+#
+# Сам файл никуда не раздаётся: он служит источником для генератора
+# конфига nginx (scripts/build-nginx-conf.mjs). Формат оставлен прежним —
+# он компактнее, чем блоки nginx, и правится без знания его синтаксиса.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+
+# Хэшированные ассеты Astro неизменяемы — можно кэшировать навсегда
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Изображения, перенесённые с донора, не меняются после миграции
+/images/legacy/*
+  Cache-Control: public, max-age=2592000

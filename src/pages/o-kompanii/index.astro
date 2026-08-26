@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import LegacyImage from '../../components/LegacyImage.astro';
+
+const sections = [
+  {
+    href: '/o-kompanii/rukovodstvo',
+    photo: '7aoXo3fCj3c.jpg',
+    alt: 'Директор пивоварни',
+    label: 'Команда',
+    title: 'Руководство',
+    text: 'Директор, пивовары и экспериментаторы — кто именно варит то, что вы пьёте.',
+  },
+  {
+    href: '/o-kompanii/pivovarnya',
+    photo: 'a0007.jpg',
+    alt: 'Варочный порядок пивоварни',
+    label: 'Производство',
+    title: 'Пивоварня',
+    text: 'Оборудование, привезённое из Европы в 2011 году, и то, что мы на нём делаем.',
+  },
+  {
+    href: '/o-kompanii/nagrady',
+    photo: 'zolotayaosen2016.jpg',
+    alt: 'Золотые медали выставки «Золотая осень»',
+    label: 'Доверие',
+    title: 'Награды',
+    text: '11 золотых медалей «Золотой осени», лауреатство «100 лучших товаров России» и региональные победы.',
+  },
+  {
+    href: '/o-kompanii/vakansii',
+    photo: 'zdanie.jpg',
+    alt: 'Здание пивоварни на Карпинского, 62',
+    label: 'Найм',
+    title: 'Вакансии',
+    text: 'Кого мы ищем в команду прямо сейчас.',
+  },
+];
+---
+
+<BaseLayout
+  title="О компании"
+  description="«Лаборатория живого пива» — команда пивоваров и технологов из Челябинска, которые варят пиво 15+ лет. Руководство, производство, награды, вакансии."
+>
+  <PageHeader
+    label="О компании"
+    title="Пивовары, технологи и просто люди"
+    lead="Мы — команда «Лаборатории живого пива»: пивовары, технологи и просто люди, которые варят пиво по 15+ лет и делают это с любовью к делу."
+    crumbs={[{ label: 'О компании' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--4">
+        {sections.map((s) => (
+          <a class="card hub" href={s.href}>
+            <div class="card__media">
+              <LegacyImage src={s.photo} alt={s.alt} ratio="4 / 3" />
+            </div>
+            <div class="hub__body">
+              <p class="label">{s.label}</p>
+              <h2 class="card__title">{s.title}</h2>
+              <p class="caption">{s.text}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hub { display: flex; flex-direction: column; }
+  /* Кадр ближе к квадрату: медаль и портрет почти не теряют площадь */
+  .hub :global(.card__media) { aspect-ratio: 4 / 3; }
+  .hub__body { display: flex; flex-direction: column; }
+  .hub .caption { margin: 0; }
+
+  .card__title {
+    font-family: var(--f-display);
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    margin-bottom: var(--s-3);
+  }
+</style>

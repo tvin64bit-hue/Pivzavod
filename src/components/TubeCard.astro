@@ -1,0 +1,229 @@
+---
+import LegacyImage from './LegacyImage.astro';
+
+/**
+ * Фишка №1 дизайн-системы: карточка-«пробирка» с 3D-flip 400ms ease-in-out.
+ * Лицо — фото и название, оборот — лабораторная этикетка (характеристики).
+ * Десктоп — переворот по наведению, мобильный — по клику.
+ *
+ * Переворот всегда выражен классом `is-flipped`, в том числе на hover: CSS-`:hover`
+ * не даёт отличить перевёрнутое состояние от обычного, а от этого зависит,
+ * кликабельна ли ссылка на обороте.
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  photo?: string | null;
+  specs: readonly (readonly [string, string])[];
+  href?: string;
+  /** Подпись ссылки на обороте */
+  hrefLabel?: string;
+}
+const { title, subtitle, photo, specs, href, hrefLabel = 'Подробнее' } = Astro.props;
+---
+
+<div class="tube" data-tube>
+  <div class="tube__inner">
+    <div class="tube__face tube__face--front">
+      <div class="tube__photo">
+        {photo ? (
+          <LegacyImage src={photo} alt={title} ratio="4 / 3" fit="contain" />
+        ) : (
+          <div class="tube__photo-empty" aria-hidden="true"></div>
+        )}
+      </div>
+      <div class="tube__caption">
+        <h3>{title}</h3>
+        {subtitle && <p class="caption">{subtitle}</p>}
+      </div>
+      <span class="tube__hint mono" aria-hidden="true">этикетка →</span>
+    </div>
+
+    <div class="tube__face tube__face--back">
+      <p class="label">Лабораторная этикетка</p>
+      <h3>{title}</h3>
+      <dl class="tube__specs">
+        {specs.map(([k, v]) => (
+          <div class="tube__spec">
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+
+  <!-- Кнопка-переворот лежит поверх карточки и даёт клавиатурный доступ.
+       Когда карточка перевёрнута, она пропускает клики к ссылке ниже. -->
+  <button class="tube__flip" type="button" aria-expanded="false" data-tube-toggle>
+    <span class="visually-hidden">
+      Показать лабораторную этикетку: {title}
+    </span>
+  </button>
+
+  {href && (
+    <a class="tube__cta" href={href} tabindex="-1" data-tube-cta>{hrefLabel} →</a>
+  )}
+</div>
+
+<style>
+  .tube {
+    position: relative;
+    perspective: 1400px;
+    min-height: 420px;
+    /* Держим длительность в одном месте: от неё зависит и задержка появления
+       ссылки на обороте */
+    --t-flip-duration: 400ms;
+  }
+
+  .tube__inner {
+    position: relative;
+    height: 100%;
+    min-height: inherit;
+    transform-style: preserve-3d;
+    transition: transform var(--t-flip-duration) ease-in-out;
+  }
+  .tube.is-flipped .tube__inner { transform: rotateY(180deg); }
+
+  .tube__face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    transition: border-color var(--t-fast);
+  }
+  .tube:hover .tube__face,
+  .tube:focus-within .tube__face { border-color: var(--c-accent); }
+
+  .tube__face--back {
+    transform: rotateY(180deg);
+    padding: var(--s-8);
+    justify-content: flex-start;
+  }
+
+  .tube__photo { flex: 1; min-height: 0; }
+  .tube__photo :global(figure) { height: 100%; border-radius: 0; }
+  .tube__photo-empty {
+    height: 100%;
+    background: linear-gradient(135deg, #241A15, #3A2C22);
+  }
+
+  .tube__caption { padding: var(--s-6); }
+  .tube__caption h3 { font-size: 22px; line-height: 30px; margin-bottom: var(--s-2); }
+  .tube__face--back h3 { font-size: 22px; line-height: 30px; margin-bottom: var(--s-6); }
+
+  .tube__hint {
+    position: absolute;
+    right: var(--s-4);
+    bottom: var(--s-4);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-ochre);
+    opacity: 0;
+    transition: opacity var(--t-fast);
+  }
+  .tube:hover .tube__hint { opacity: 1; }
+  .tube.is-flipped .tube__hint { opacity: 0; }
+
+  .tube__specs { margin: 0; }
+  .tube__spec {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .tube__spec dt {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    flex: none;
+  }
+  .tube__spec dd {
+    margin: 0;
+    font-size: 14px;
+    text-align: right;
+    color: var(--c-text);
+  }
+
+  .tube__flip {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    border-radius: var(--r-md);
+  }
+  /* На обороте клики должны доходить до ссылки, лежащей выше по z-index */
+  .tube.is-flipped .tube__flip { pointer-events: none; }
+
+  .tube__cta {
+    position: absolute;
+    left: var(--s-8);
+    bottom: var(--s-8);
+    z-index: 4;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    opacity: 0;
+    pointer-events: none;
+    /* Прячется мгновенно, а появляется только когда оборот уже развернулся:
+       иначе ссылка проступает сквозь карточку в середине переворота. */
+    transition: opacity 160ms ease;
+  }
+  .tube.is-flipped .tube__cta {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 200ms ease var(--t-flip-duration);
+  }
+
+  @media (max-width: 767px) {
+    .tube { min-height: 380px; }
+    .tube__face--back { padding: var(--s-6); }
+    .tube__cta { left: var(--s-6); bottom: var(--s-6); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tube__inner { transition: none; }
+  }
+</style>
+
+<script>
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  document.querySelectorAll<HTMLElement>('[data-tube]').forEach((tube) => {
+    const toggle = tube.querySelector<HTMLButtonElement>('[data-tube-toggle]');
+    const cta = tube.querySelector<HTMLAnchorElement>('[data-tube-cta]');
+
+    const setFlipped = (flipped: boolean) => {
+      tube.classList.toggle('is-flipped', flipped);
+      toggle?.setAttribute('aria-expanded', String(flipped));
+      // Ссылка на обороте не должна ловить Tab, пока она не видна
+      cta?.setAttribute('tabindex', flipped ? '0' : '-1');
+    };
+
+    toggle?.addEventListener('click', () => setFlipped(!tube.classList.contains('is-flipped')));
+
+    // Десктоп: наведение переворачивает, уход — возвращает
+    tube.addEventListener('mouseenter', () => canHover.matches && setFlipped(true));
+    tube.addEventListener('mouseleave', () => canHover.matches && setFlipped(false));
+
+    // Клавиатура: фокус на кнопке показывает оборот
+    toggle?.addEventListener('focus', () => setFlipped(true));
+    tube.addEventListener('focusout', (e) => {
+      if (!tube.contains(e.relatedTarget as Node)) setFlipped(false);
+    });
+  });
+</script>

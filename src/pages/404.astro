@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Страница не найдена"
+  description="Такой страницы на сайте «Лаборатории живого пива» нет."
+  noindex
+>
+  <section class="section notfound">
+    <div class="container notfound__inner">
+      <div class="notfound__text">
+        <p class="label">Ошибка 404</p>
+        <h1>Проба не удалась</h1>
+        <p class="lead">
+          Такой страницы у нас нет. Возможно, она переехала при переносе сайта —
+          загляните в блог или начните с главной.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/">На главную</a>
+          <a class="btn btn--secondary" href="/blog">В блог</a>
+        </div>
+      </div>
+
+      <!-- Колба-«проба» в стиле логотипа с выноской как на лабораторном чертеже -->
+      <div class="notfound__art" aria-hidden="true">
+        <svg viewBox="0 0 320 300" class="notfound__svg">
+          <!-- Недолитая проба -->
+          <path
+            class="notfound__liquid"
+            d="M104 216 H216 L222 232 a16 16 0 0 1 -15 22 H113 a16 16 0 0 1 -15 -22 Z"
+          />
+          <g fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <!-- Колба Эрленмейера -->
+            <path d="M132 40h56" />
+            <path d="M138 40v62L94 230a16 16 0 0 0 15 22h102a16 16 0 0 0 15-22L182 102V40" />
+            <!-- Мерные риски -->
+            <path d="M196 176h16M190 196h22M184 216h28" opacity="0.55" />
+            <!-- Пузырьки -->
+            <circle cx="140" cy="198" r="4" opacity="0.7" />
+            <circle cx="158" cy="182" r="3" opacity="0.55" />
+            <circle cx="172" cy="204" r="2.5" opacity="0.45" />
+            <!-- Выноска к номеру ошибки -->
+            <path d="M186 78h56" stroke-dasharray="2 7" opacity="0.7" />
+            <circle cx="186" cy="78" r="3" />
+          </g>
+          <text x="250" y="86" class="notfound__tag">404</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound { padding-block: var(--s-24); }
+  .notfound__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
+    gap: var(--s-16);
+    align-items: center;
+  }
+  .notfound h1 { margin-bottom: var(--s-6); }
+  .notfound .lead { margin-bottom: var(--s-12); }
+
+  .notfound__art { color: var(--c-ochre); }
+  .notfound__svg { width: 100%; height: auto; opacity: 0.8; }
+  .notfound__liquid { fill: rgba(244, 169, 59, 0.18); }
+  .notfound__tag {
+    fill: var(--c-accent);
+    font-family: var(--f-mono);
+    font-size: 34px;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 767px) {
+    .notfound__inner { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+    .notfound__art { max-width: 260px; }
+  }
+</style>
