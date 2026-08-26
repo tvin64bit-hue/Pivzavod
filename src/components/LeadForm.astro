@@ -314,7 +314,18 @@ const uid = `${id}-${Math.random().toString(36).slice(2, 8)}`;
             page: location.pathname,
           }),
         });
+        // Одного кода 200 мало. Статические хостинги на неизвестный путь
+        // часто отвечают страницей сайта с кодом 200 — если в такой ответ
+        // поверить, форма отрапортует об успехе, а заявку никто не получит.
+        // Успехом считаем только наш собственный ответ: JSON с ok: true.
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const type = res.headers.get('Content-Type') ?? '';
+        if (!type.includes('application/json')) throw new Error('обработчик не отвечает');
+
+        const result = await res.json();
+        if (result?.ok !== true) throw new Error(result?.error ?? 'отказ');
+
         form.reset();
         if (ok) ok.hidden = false;
       } catch {
