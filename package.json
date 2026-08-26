@@ -6,12 +6,15 @@
   "description": "Сайт «Лаборатория живого пива» (Челябинск)",
   "scripts": {
     "dev": "astro dev",
+    "predev": "node scripts/prepare-content.mjs",
     "build": "astro build",
+    "prebuild": "node scripts/prepare-content.mjs",
     "preview": "astro preview",
     "check": "astro check",
+    "content": "node scripts/prepare-content.mjs",
     "migrate": "node scripts/migrate-donor.mjs",
     "nginx": "node scripts/build-nginx-conf.mjs",
-    "serve": "node server/lead.mjs",
+    "serve": "node server/app.mjs",
     "deploy": "./deploy/deploy.sh"
   },
   "dependencies": {

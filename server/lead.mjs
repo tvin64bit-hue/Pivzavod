@@ -17,11 +17,10 @@
  *   SMTP_PASS    пароль приложения (не пароль от аккаунта!)
  *   MAIL_FROM    необязательно, по умолчанию SMTP_USER
  *   ALLOWED_ORIGIN  необязательно, точный Origin сайта
- *   PORT         необязательно, по умолчанию 8787
  */
 
-import { createServer } from 'node:http';
 import nodemailer from 'nodemailer';
+import { json, readBody, rejectBody, asString, escapeHtml } from './lib/http.mjs';
 
 const {
   MAIL_TO,
@@ -31,7 +30,6 @@ const {
   SMTP_PASS,
   MAIL_FROM,
   ALLOWED_ORIGIN,
-  PORT = '8787',
 } = process.env;
 
 const configured = Boolean(MAIL_TO && SMTP_HOST && SMTP_USER && SMTP_PASS);
@@ -66,100 +64,70 @@ const LIMITS = { name: 80, phone: 32, message: 2000, source: 120, page: 200 };
 /** Тело запроса: больше 16 КБ для этой формы быть не может */
 const MAX_BODY = 16 * 1024;
 
-const asString = (value, max) =>
-  typeof value === 'string' ? value.trim().slice(0, max) : '';
-
-const escapeHtml = (value) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-
 /** Российский номер: 11 цифр, начинается с 7 или 8 */
 const isValidPhone = (raw) => {
   const digits = raw.replace(/\D/g, '');
   return digits.length === 11 && (digits.startsWith('7') || digits.startsWith('8'));
 };
 
-const json = (res, status, body) => {
-  const payload = JSON.stringify(body);
-  res.writeHead(status, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(payload),
-    'Cache-Control': 'no-store',
-  });
-  res.end(payload);
+/** Ответить и сообщить маршрутизатору, что запрос обработан */
+const sent = (res, status, body) => {
+  json(res, status, body);
+  return true;
 };
 
-const readBody = (req) =>
-  new Promise((resolve, reject) => {
-    let size = 0;
-    const chunks = [];
-    req.on('data', (chunk) => {
-      size += chunk.length;
-      if (size > MAX_BODY) {
-        // Не рвём соединение: сначала дадим ответить 413, иначе клиент
-        // получит обрыв вместо кода ошибки
-        req.pause();
-        reject(new Error('too_large'));
-        return;
-      }
-      chunks.push(chunk);
-    });
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-    req.on('error', reject);
-  });
+/** Настроена ли отправка — показывается в проверке живости */
+export const mailConfigured = () => configured;
 
-/** Ответ с закрытием соединения: остаток тела дочитывать незачем */
-const rejectBody = (req, res, status, error) => {
-  res.setHeader('Connection', 'close');
-  json(res, status, { ok: false, error });
-  req.destroy();
-};
-
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://localhost');
-
+/** Обрабатывает /api/*. Возвращает false, если путь не наш. */
+export const handleApi = async (req, res, url) => {
   // Проверка живости для systemd и мониторинга
   if (req.method === 'GET' && url.pathname === '/api/health') {
-    return json(res, 200, { ok: true, mail: configured });
+    json(res, 200, { ok: true, mail: configured });
+    return true;
   }
 
-  if (url.pathname !== '/api/lead') return json(res, 404, { ok: false, error: 'not_found' });
+  if (url.pathname !== '/api/lead') return false;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return json(res, 405, { ok: false, error: 'method_not_allowed' });
+    json(res, 405, { ok: false, error: 'method_not_allowed' });
+    return true;
   }
 
-  if (!configured) return json(res, 503, { ok: false, error: 'not_configured' });
+  if (!configured) return sent(res, 503, { ok: false, error: 'not_configured' });
 
   if (ALLOWED_ORIGIN) {
     const origin = req.headers.origin;
     if (origin && origin !== ALLOWED_ORIGIN) {
-      return json(res, 403, { ok: false, error: 'forbidden_origin' });
+      json(res, 403, { ok: false, error: 'forbidden_origin' });
+      return true;
     }
   }
 
   // Заявленный размер проверяем до чтения — так отказ стоит один пакет
   const declared = Number(req.headers['content-length']);
   if (Number.isFinite(declared) && declared > MAX_BODY) {
-    return rejectBody(req, res, 413, 'too_large');
+    rejectBody(req, res, 413, 'too_large');
+    return true;
   }
 
   let payload;
   try {
-    payload = JSON.parse(await readBody(req));
+    payload = JSON.parse((await readBody(req)).toString('utf8'));
   } catch (err) {
     // too_large ловим и здесь: у запроса без Content-Length (chunked)
     // размер виден только по ходу чтения
-    if (err?.message === 'too_large') return rejectBody(req, res, 413, 'too_large');
-    return json(res, 400, { ok: false, error: 'bad_json' });
+    if (err?.message === 'too_large') {
+      rejectBody(req, res, 413, 'too_large');
+      return true;
+    }
+    json(res, 400, { ok: false, error: 'bad_json' });
+    return true;
   }
 
   // Honeypot: поле скрыто от людей, заполняют его только боты.
   // Отвечаем успехом, чтобы спамер не подбирал обход.
-  if (asString(payload?.company, 100)) return json(res, 200, { ok: true });
+  if (asString(payload?.company, 100)) return sent(res, 200, { ok: true });
 
   const name = asString(payload?.name, LIMITS.name);
   const phone = asString(payload?.phone, LIMITS.phone);
@@ -168,8 +136,8 @@ const server = createServer(async (req, res) => {
   const page = asString(payload?.page, LIMITS.page);
   const topic = TOPIC_LABELS[asString(payload?.topic, 20)] ?? TOPIC_LABELS.other;
 
-  if (name.length < 2) return json(res, 400, { ok: false, error: 'invalid_name' });
-  if (!isValidPhone(phone)) return json(res, 400, { ok: false, error: 'invalid_phone' });
+  if (name.length < 2) return sent(res, 400, { ok: false, error: 'invalid_name' });
+  if (!isValidPhone(phone)) return sent(res, 400, { ok: false, error: 'invalid_phone' });
 
   const when = new Intl.DateTimeFormat('ru-RU', {
     dateStyle: 'short',
@@ -211,14 +179,13 @@ ${rows
       text,
       html,
     });
-    return json(res, 200, { ok: true });
+    json(res, 200, { ok: true });
+    return true;
   } catch (err) {
     // Пароль в сообщении об ошибке nodemailer не печатает
     console.error('lead: письмо не ушло —', err?.message ?? err);
-    return json(res, 502, { ok: false, error: 'mail_failed' });
+    json(res, 502, { ok: false, error: 'mail_failed' });
+    return true;
   }
-});
+};
 
-server.listen(Number(PORT), '127.0.0.1', () => {
-  console.log(`lead: слушаю 127.0.0.1:${PORT}, почта ${configured ? 'настроена' : 'НЕ настроена'}`);
-});

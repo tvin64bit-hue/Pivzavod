@@ -43,9 +43,25 @@ const {
   zoomable = false,
 } = Astro.props;
 
-const publicPath = path.join(process.cwd(), 'public', 'images', 'legacy', src);
+/**
+ * Два источника изображений.
+ *
+ * Имя файла (`zdanie.jpg`) — архив, перенесённый с донора: лежит в репозитории,
+ * раздаётся из сборки. Путь от корня (`/uploads/2026/08/foto.jpg`) — фотография,
+ * загруженная через админку: лежит в каталоге данных на сервере и раздаётся
+ * nginx напрямую, в сборку не попадая. Для обоих нужен доступ к файлу на
+ * сборке — иначе не посчитать пропорции для защиты от обрезки ниже.
+ */
+const UPLOADS_DIR =
+  process.env.UPLOADS_DIR ||
+  path.join(process.env.DATA_DIR || path.join(process.cwd(), 'data'), 'uploads');
+const isUpload = src.startsWith('/uploads/');
+
+const publicPath = isUpload
+  ? path.join(UPLOADS_DIR, src.slice('/uploads/'.length))
+  : path.join(process.cwd(), 'public', 'images', 'legacy', src);
 const exists = fs.existsSync(publicPath);
-const url = `/images/legacy/${src}`;
+const url = isUpload ? src : `/images/legacy/${src}`;
 
 /**
  * Автоматическая защита от чрезмерной обрезки.
@@ -98,7 +114,7 @@ if (exists && Astro.props.fit === undefined) {
         <path d="m4 17 5-5 4 4 2.5-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
       <span class="legacy__name">{src}</span>
-      <span class="legacy__hint">не выгружено с донора</span>
+      <span class="legacy__hint">{isUpload ? 'файл не найден' : 'не выгружено с донора'}</span>
     </div>
   )}
 </figure>

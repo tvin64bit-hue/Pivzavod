@@ -17,7 +17,12 @@ export const CATEGORIES = {
 export type CategoryKey = keyof typeof CATEGORIES;
 
 const blog = defineCollection({
-  loader: glob({ base: './src/content/blog', pattern: '**/*.md' }),
+  /**
+   * Читаем из .content/blog, а не из src/content/blog напрямую: этот каталог
+   * собирает scripts/prepare-content.mjs из архива в репозитории и записей,
+   * созданных через админку на сервере. Запускается сам перед build и dev.
+   */
+  loader: glob({ base: './.content/blog', pattern: '**/*.md' }),
   schema: z.object({
     title: z.string(),
     /** Оригинальная дата публикации с донора — раздел 8 ТЗ */

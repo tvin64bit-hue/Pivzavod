@@ -1,0 +1,48 @@
+# Сервис сайта: приём заявок с формы и админка. Ставится в /etc/systemd/system/
+#
+#   sudo cp deploy/pivzavod74.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now pivzavod74
+
+[Unit]
+Description=Сайт pivzavod74.ru: заявки с формы и админка
+Documentation=https://github.com/tvin64bit-hue/Pivzavod
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/pivzavod74
+
+# Пароль от почты лежит здесь, а не в этом файле: юнит попадает в git,
+# а /etc/pivzavod74.env — нет. Права на него должны быть 600.
+EnvironmentFile=/etc/pivzavod74.env
+
+ExecStart=/usr/bin/node /srv/pivzavod74/server/app.mjs
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# Пишем только туда, куда положено: данные админки, каталог сборок
+# и рабочая копия проекта (astro build кладёт кэш в .astro)
+ProtectSystem=strict
+ReadWritePaths=/srv/pivzavod74 /var/www/pivzavod74
+
+# Сборка сайта поднимает потребление примерно до 350 МБ; берём запас,
+# чтобы падение по памяти не оставило сайт без публикации
+MemoryMax=1G
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pivzavod74
+
+[Install]
+WantedBy=multi-user.target
