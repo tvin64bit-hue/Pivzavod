@@ -91,7 +91,9 @@ import { awards } from '../../data/content';
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-4);
   }
-  .award__gallery > :first-child { grid-column: 1 / -1; }
+  /* Обложка занимает всю ширину. :global — потому что рамку рисует
+     LegacyImage, и без него правило не достаёт до чужого компонента */
+  .award__gallery > :global(.legacy):first-child { grid-column: 1 / -1; }
 
   @media (max-width: 1023px) {
     .award { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }

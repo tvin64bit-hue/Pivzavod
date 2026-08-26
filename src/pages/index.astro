@@ -97,7 +97,8 @@ for (const award of awards) {
         <p class="label">Награды</p>
         <h2>Нас проверяли жюри, а не только собственный вкус</h2>
         <p class="lead">
-          Наведите на карточку — на обороте лабораторная этикетка награды.
+          <span class="hint-hover">Наведите на карточку</span><span class="hint-tap"
+            >Коснитесь карточки</span> — на обороте лабораторная этикетка награды.
         </p>
       </div>
 
@@ -307,16 +308,30 @@ for (const award of awards) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--s-6);
   }
+  /* На телефоне наводить нечем — там карточка переворачивается по касанию */
+  .hint-tap { display: none; }
+  @media (hover: none) {
+    .hint-hover { display: none; }
+    .hint-tap { display: inline; }
+  }
+
   .awards__more {
     margin-top: var(--s-8);
     font-weight: 600;
   }
   .awards__more a { text-decoration: none; }
 
+  /*
+    Карточки приходят из TubeCard, а у него своя область видимости стилей.
+    Astro дописывает свой признак к последнему элементу селектора, поэтому
+    правило вида «.awards > *» получает признак этой страницы и до чужой
+    карточки не достаёт. Нужен :global на той части, что указывает на неё.
+  */
+
   /* Планшет — сетка 2+1 */
   @media (max-width: 1023px) and (min-width: 768px) {
     .awards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .awards > :last-child { grid-column: 1 / -1; }
+    .awards > :global(.tube):last-child { grid-column: 1 / -1; }
   }
 
   /* Мобильный — горизонтальный свайп вместо сетки (раздел 5) */
@@ -334,7 +349,7 @@ for (const award of awards) {
       scrollbar-width: none;
     }
     .awards::-webkit-scrollbar { display: none; }
-    .awards > * {
+    .awards > :global(.tube) {
       flex: 0 0 82%;
       scroll-snap-align: center;
     }
